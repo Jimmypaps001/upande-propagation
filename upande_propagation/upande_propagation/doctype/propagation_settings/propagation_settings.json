@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-04 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "stage_duration_section",
+  "stage_duration_html",
+  "stage_durations",
+  "invoice_default_section",
+  "invoice_default_html",
+  "sales_invoice_defaults"
+ ],
+ "fields": [
+  {
+   "fieldname": "stage_duration_section",
+   "fieldtype": "Section Break",
+   "label": "Stage Durations"
+  },
+  {
+   "fieldname": "stage_duration_html",
+   "fieldtype": "HTML",
+   "options": "<p class=\"text-muted small\">Expected days in each nursery stage. Shown against the actual days on every Propagation Batch stage row.</p>"
+  },
+  {
+   "fieldname": "stage_durations",
+   "fieldtype": "Table",
+   "label": "Stage Durations",
+   "options": "Propagation Stage Duration"
+  },
+  {
+   "fieldname": "invoice_default_section",
+   "fieldtype": "Section Break",
+   "label": "Sales Invoice Defaults"
+  },
+  {
+   "fieldname": "invoice_default_html",
+   "fieldtype": "HTML",
+   "options": "<p class=\"text-muted small\">Values applied to a Sales Invoice raised from a Seedling Dispatch. Use this for fields a site makes mandatory on Sales Invoice. A value written as <code>{fieldname}</code> is copied from the dispatch.</p>"
+  },
+  {
+   "fieldname": "sales_invoice_defaults",
+   "fieldtype": "Table",
+   "label": "Sales Invoice Defaults",
+   "options": "Propagation Invoice Default"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-04 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Propagation Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Agriculture Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Agriculture User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

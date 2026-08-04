@@ -1,0 +1,690 @@
+<style>
+:root{
+  --bg:#fff;--bg-card:#fff;--bg-hover:#fafafa;--bg-muted:#f5f5f5;
+  --border:#ececec;--border-2:#d0d0d0;
+  --text:#000;--text-2:#6b6b6b;--text-3:#9a9a9a;--text-4:#cfcfcf;
+  --accent:#000;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--plan:#d4d4d4;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04);
+  --f:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
+}
+html,body{margin:0!important;padding:0!important;overflow:hidden!important;height:100vh!important}
+.navbar,header,.page-breadcrumbs,.page-header,.web-footer,footer,.website-banner,.web-page-edit,.published-edit,.scroll-to-top{display:none!important}
+.aph *{box-sizing:border-box;margin:0;padding:0}
+.aph{position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483000;font-family:var(--f);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;display:grid;grid-template-columns:240px 1fr;font-feature-settings:'cv11','ss01'}
+.aph svg.ic{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;color:var(--text-3)}
+.aph .nav-item.active svg.ic{color:#fff}
+.aph .aph-kpi svg.ic{width:18px;height:18px;color:var(--text-3);stroke-width:1.5}
+.aph-side{background:var(--bg-card);border-right:1px solid var(--border);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;overflow:hidden}
+.aph-side .brand{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.aph-side .brand .mark{width:36px;height:36px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;border-radius:7px}
+.aph-side .brand .name{font-weight:600;font-size:14px;line-height:1.15;letter-spacing:-0.015em}
+.aph-side .brand .name small{display:block;font-size:11px;color:var(--text-3);font-weight:400;margin-top:2px}
+.aph-side .nav{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 0 16px;margin:0;list-style:none;display:flex;flex-direction:column;flex-wrap:nowrap!important}
+.aph-side .group-lbl{padding:14px 20px 4px;font-size:10px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.aph-side .nav-item{display:flex;align-items:center;gap:11px;padding:8px 12px;cursor:pointer;font-size:13px;color:var(--text-2);font-weight:500;user-select:none;transition:background .12s,color .12s;margin:1px 8px;border-radius:6px}
+.aph-side .nav-item:hover{background:var(--bg-hover);color:var(--text)}
+.aph-side .nav-item.active{background:var(--accent);color:#fff}
+.aph-side .nav-item .badge{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-2);background:var(--bg-muted);padding:1px 7px;border-radius:9px}
+.aph-side .nav-item.active .badge{color:#fff;background:rgba(255,255,255,.18)}
+.aph-side .home-link{display:flex;align-items:center;gap:11px;margin:8px 8px 0;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:500;color:var(--text-2);text-decoration:none}
+.aph-side .home-link:hover{background:var(--bg-hover);color:var(--text);text-decoration:none}
+.aph-side .footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-2)}
+.aph-side .footer .av{width:24px;height:24px;border-radius:50%;background:var(--bg-muted);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:10px}
+.aph-side .footer .who{flex:1;overflow:hidden}
+.aph-side .footer .who .nm{font-weight:600;color:var(--text);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aph-side .footer .who .em{font-size:10px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aph-main{min-width:0;height:100vh;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+.aph-topbar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:10}
+.aph-topbar h1{font-size:18px;font-weight:600;letter-spacing:-0.02em}
+.aph-topbar .crumb{color:var(--text-3);font-size:11px;font-weight:500;padding-left:14px;border-left:1px solid var(--border);height:18px;line-height:18px}
+.aph-topbar .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.aph-topbar .date-pill{display:inline-flex;align-items:center;border:1px solid var(--border-2);border-radius:7px;overflow:hidden;height:32px}
+.aph-topbar .date-pill input{border:0;padding:0 10px;font-size:12px;font-family:var(--f);background:transparent;outline:0;width:120px;font-weight:500}
+.aph-topbar .date-pill .sep{padding:0 4px;color:var(--text-3)}
+.aph-topbar .btn{padding:0 14px;height:32px;border:1px solid var(--border-2);background:var(--bg-card);color:var(--text);border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--f);display:flex;align-items:center;gap:6px}
+.aph-topbar .btn:hover{background:var(--bg-hover)}
+.aph-topbar .btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.aph-topbar .btn svg{width:14px;height:14px}
+.aph-content{padding:28px;flex:1}
+.aph-page-hd{margin-bottom:24px}
+.aph-page-hd .ttl{font-size:24px;font-weight:600;letter-spacing:-0.025em;line-height:1.15}
+.aph-page-hd .sub{font-size:13px;color:var(--text-2);margin-top:4px}
+.aph-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:28px}
+.aph-kpi{background:var(--bg-card);border:1px solid var(--border);padding:20px 22px;border-radius:10px;position:relative;min-height:118px;display:flex;flex-direction:column;justify-content:space-between}
+.aph-kpi:hover{border-color:var(--border-2);box-shadow:var(--shadow-sm)}
+.aph-kpi .ic-wrap{position:absolute;top:18px;right:20px;width:30px;height:30px;border-radius:7px;background:var(--bg-muted);display:flex;align-items:center;justify-content:center}
+.aph-kpi .lbl{font-size:11px;color:var(--text-2);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.aph-kpi .v{font-size:30px;font-weight:600;letter-spacing:-0.035em;font-feature-settings:'tnum';margin-top:10px;line-height:1}
+.aph-kpi .sub{font-size:11px;color:var(--text-3);margin-top:8px;font-weight:500}
+.aph-kpi .sub strong{color:var(--text-2);font-weight:600}
+.aph-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;width:100%;max-width:none}
+.aph-grid.aph-full{grid-template-columns:1fr!important;width:100%!important;max-width:none!important}
+.aph-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%;min-width:0}
+.aph-card-hd{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.aph-card-hd .ttl{font-weight:600;font-size:14px;white-space:nowrap}
+.aph-card-hd .sub{color:var(--text-3);font-size:11px;font-weight:500}
+.aph-card-body{padding:18px 22px}
+.aph-card-body.padless{padding:0;overflow-x:auto}
+table.aph-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.aph-tbl th{text-align:left;padding:11px 16px;font-size:11px;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+.aph-tbl td{padding:11px 16px;border-bottom:1px solid var(--border);font-feature-settings:'tnum';white-space:nowrap}
+.aph-tbl tr:last-child td{border-bottom:0}
+.aph-tbl tr:hover td{background:var(--bg-hover)}
+.aph-tbl td.num,.aph-tbl th.num{text-align:right}
+.aph-tbl td.mono{font-family:var(--mono);font-size:12px;color:var(--text-2)}
+.aph-tbl td.dim{color:var(--text-3)}
+.aph-tbl td.strong{font-weight:600}
+.aph-empty{padding:40px;text-align:center;color:var(--text-3);font-size:13px}
+.aph-loading{padding:60px;text-align:center;color:var(--text-3);font-size:12px}
+.aph-err{background:var(--text);color:#fff;padding:12px 16px;border-radius:7px;font-size:12px;margin:14px 28px;font-family:var(--mono)}
+.aph-bar-row{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--border)}
+.aph-bar-row:last-child{border-bottom:0}
+.aph-bar-row .lbl{width:150px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aph-bar-row .bar{flex:1;height:8px;background:var(--bg-muted);border-radius:4px;overflow:hidden}
+.aph-bar-row .bar .fill{height:100%;background:var(--text);border-radius:4px}
+.aph-bar-row .val{width:170px;text-align:right;font-size:12px;color:var(--text-2);font-feature-settings:'tnum'}
+.aph-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:11px;background:var(--bg-muted);color:var(--text);font-weight:500}
+.aph-tag.good{background:#dcfce7;color:#166534}.aph-tag.warn{background:#fef3c7;color:#92400e}.aph-tag.bad{background:#fee2e2;color:#991b1b}
+.aph-chart-scroll{width:100%;overflow-x:auto;padding:10px 16px}
+.aph-chart-inner{position:relative;width:100%}
+@media (max-width:900px){
+  html,body{overflow:auto!important}
+  .aph{display:flex;flex-direction:column;position:fixed}
+  .aph-side{width:100%;height:auto;position:relative;border-right:0;border-bottom:1px solid var(--border)}
+  .aph-side .nav{flex-direction:row;overflow-x:auto;padding:0 8px 8px}
+  .aph-side .group-lbl,.aph-side .footer{display:none}
+  .aph-side .nav-item{flex:0 0 auto;white-space:nowrap}
+  .aph-main{height:auto}.aph-topbar{position:static;flex-wrap:wrap}.aph-topbar .right{margin-left:0;width:100%;flex-wrap:wrap}
+  .aph-content{padding:14px}.aph-grid{grid-template-columns:1fr}
+}
+.aph .aph-kpi.kpi-click{cursor:pointer;transition:border-color .12s,box-shadow .12s,transform .06s}
+.aph .aph-kpi.kpi-click:hover{border-color:var(--text-3);box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.aph .aph-kpi.kpi-click:active{transform:translateY(1px)}
+.aph .aph-kpi.kpi-click::after{content:'⤢';position:absolute;bottom:9px;right:12px;color:var(--text-4);font-size:11px}
+.aph .aph-modal{display:none;position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,.38);align-items:center;justify-content:center;padding:24px}
+.aph .aph-modal-box{background:#fff;border-radius:12px;max-width:860px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.aph .aph-modal-hd{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border)}
+.aph .aph-modal-ttl{font-weight:600;font-size:15px;flex:1}
+.aph .aph-modal-x{cursor:pointer;font-size:22px;line-height:1;color:var(--text-3);padding:0 4px}
+.aph .aph-modal-x:hover{color:var(--text)}
+.aph .aph-modal-body{padding:0;overflow:auto}
+.aph .ext-link{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--border-2);border-radius:8px;font-size:12px;font-weight:600;color:var(--text);text-decoration:none;background:var(--bg-card)}
+.aph .ext-link:hover{background:var(--bg-hover);text-decoration:none}
+.aph .ext-link svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.aph td a.txn{color:#1d4ed8;text-decoration:none;font-family:var(--mono);font-size:12px}
+.aph td a.txn:hover{text-decoration:underline}
+.aph .fsel{height:32px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg-card);font-size:12px;font-weight:500;font-family:var(--f);color:var(--text);padding:0 8px;max-width:180px;cursor:pointer}
+.aph .fsel:hover{background:var(--bg-hover)}
+.aph #aph-filters{flex-wrap:wrap;gap:7px}
+.aph .batch-link{cursor:pointer;color:#1d4ed8;font-weight:600}
+.aph .batch-link:hover{text-decoration:underline}
+.aph .prof{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 26px;padding:18px 22px;font-size:13px}
+.aph .prof .row{display:flex;flex-direction:column;gap:2px;min-width:0}
+.aph .prof .row .k{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.aph .prof .row .v{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aph .batch-pick{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.aph .batch-pick input{height:38px;border:1px solid var(--border-2);border-radius:8px;padding:0 12px;font-size:14px;font-family:var(--f);min-width:340px;font-weight:500}
+.aph .batch-pick .hint{font-size:12px;color:var(--text-3)}
+.aph .stage-rail{display:flex;gap:8px;padding:18px 22px;overflow-x:auto}
+.aph .stage-rail .st{flex:1 0 120px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;position:relative;overflow:hidden}
+.aph .stage-rail .st.live{border-color:var(--text);box-shadow:var(--shadow-sm)}
+.aph .stage-rail .st .s{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);font-weight:600}
+.aph .stage-rail .st .q{font-size:18px;font-weight:600;letter-spacing:-0.03em;font-feature-settings:'tnum';margin-top:3px}
+.aph .stage-rail .st .b{font-size:11px;color:var(--text-3)}
+.aph .stage-rail .st .fillbar{position:absolute;left:0;bottom:0;height:3px;background:var(--text)}
+</style>
+<div class="aph">
+  <aside class="aph-side">
+    <div class="brand"><div class="mark">PR</div><div class="name">Propagation<small>Nursery · cuttings to seedlings</small></div></div>
+    <a class="home-link" href="/app/propagation"><svg class="ic" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Back to Desk</a>
+    <div class="nav" id="aph-nav">
+      <div class="group-lbl">Summary</div>
+      <div class="nav-item active" data-tab="overview"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Overview</div>
+      <div class="group-lbl">Nursery</div>
+      <div class="nav-item" data-tab="batches"><svg class="ic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg>Batches<span class="badge" id="bd-bt"></span></div>
+      <div class="nav-item" data-tab="batch360"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Batch 360</div>
+      <div class="nav-item" data-tab="logs"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Daily Logs<span class="badge" id="bd-lg"></span></div>
+      <div class="group-lbl">Demand &amp; Output</div>
+      <div class="nav-item" data-tab="requests"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>Requests<span class="badge" id="bd-rq"></span></div>
+      <div class="nav-item" data-tab="dispatch"><svg class="ic" viewBox="0 0 24 24"><path d="M5 18H3V6a1 1 0 0 1 1-1h11v13h-2"/><path d="M15 8h4l3 3v7h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>Dispatch &amp; Sales<span class="badge" id="bd-ds"></span></div>
+      <div class="group-lbl">Source</div>
+      <div class="nav-item" data-tab="mother"><svg class="ic" viewBox="0 0 24 24"><path d="M12 22V12"/><path d="M12 12c0-4 3-7 7-7 0 4-3 7-7 7Z"/><path d="M12 12C12 8 9 5 5 5c0 4 3 7 7 7Z"/></svg>Mother Stock<span class="badge" id="bd-mb"></span></div>
+      <div class="group-lbl">Reports</div>
+      <div class="nav-item" data-tab="trace"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Traceability</div>
+    </div>
+    <div class="footer"><div class="av" id="aph-foot-av">—</div><div class="who"><div class="nm" id="aph-foot-nm">Loading…</div><div class="em" id="aph-foot-em">propagation</div></div></div>
+  </aside>
+  <div class="aph-main">
+    <div class="aph-topbar">
+      <h1 id="aph-ttl">Overview</h1><span class="crumb">Propagation</span>
+      <div class="right" id="aph-filters">
+        <select class="fsel" id="aph-company" title="Company"><option value="">All companies</option></select>
+        <div class="date-pill"><input type="date" id="aph-from" title="From"><span class="sep">→</span><input type="date" id="aph-to" title="To"></div>
+        <button class="btn" id="aph-done" title="Include completed batches">Completed: off</button>
+        <button class="btn" id="aph-clear" title="Clear all filters">Clear</button>
+        <button class="btn" id="aph-reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>Refresh</button>
+      </div>
+    </div>
+    <div class="aph-content" id="aph-content"><div class="aph-loading">Loading…</div></div>
+  </div>
+  <div class="aph-modal" id="aph-modal"><div class="aph-modal-box"><div class="aph-modal-hd"><div class="aph-modal-ttl"></div><div class="aph-modal-x" id="aph-modal-x">×</div></div><div class="aph-modal-body"></div></div></div>
+</div>
+<script>
+(function(){
+  var API='upande_propagation.api.';
+  var state={tab:'overview',company:'',from:'',to:'',done:0,batchSel:null,drills:{},batchList:null};
+  var TITLES={overview:'Overview',batches:'Batches',batch360:'Batch 360',logs:'Daily Logs',requests:'Seedling Requests',dispatch:'Dispatch & Sales',mother:'Mother Stock',trace:'Traceability'};
+  var STAGES=['Cutting','Sticking','Callusing','Rooting','Nursery','Hardening','Ready for Dispatch'];
+  var ICONS={
+    box:'<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg>',
+    leaf:'<svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>',
+    truck:'<svg viewBox="0 0 24 24"><path d="M5 18H3V6a1 1 0 0 1 1-1h11v13h-2"/><path d="M15 8h4l3 3v7h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>',
+    money:'<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    warn:'<svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    doc:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+    clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    check:'<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    x:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    sum:'<svg viewBox="0 0 24 24"><path d="M4 4h16l-7 8 7 8H4"/></svg>',
+    pl:'<svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>',
+    users:'<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    bldg:'<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M8 10h.01M16 10h.01"/></svg>'
+  };
+
+  function fmt(n){if(n==null||isNaN(n))return '—';return Number(n).toLocaleString(undefined,{maximumFractionDigits:0});}
+  function fmt1(n){if(n==null||isNaN(n))return '—';return Number(n).toLocaleString(undefined,{maximumFractionDigits:1});}
+  function kes(n){return n==null||isNaN(n)?'—':'KES '+fmt(n);}
+  function kesM(n){if(n==null||isNaN(n))return '—';return Math.abs(n)>=1e6?('KES '+fmt1(n/1e6)+'M'):kes(n);}
+  function pct(n){return n==null||isNaN(n)?'—':fmt1(n)+'%';}
+  function esc(s){if(s==null)return '';return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function d10(v){return v?esc(String(v).substring(0,10)):'—';}
+
+  function frp(method,args){return new Promise(function(resolve,reject){
+    function go(){if(!window.frappe||!frappe.call){setTimeout(go,120);return;}
+      frappe.call({method:method,args:args||{},callback:function(r){resolve(r?r.message:null);},error:reject});}
+    go();});}
+  function api(fn,extra){var a={company:state.company};if(extra)for(var k in extra)a[k]=extra[k];return frp(API+fn,a);}
+  function dateArgs(){return {from_date:state.from||'',to_date:state.to||''};}
+  function glist(dt,opts){var a={doctype:dt,limit_page_length:0};for(var k in opts)a[k]=opts[k];if(a.fields)a.fields=JSON.stringify(a.fields);if(a.filters)a.filters=JSON.stringify(a.filters);return frp('frappe.client.get_list',a).then(function(m){return m||[];});}
+
+  function setErr(e){document.getElementById('aph-content').innerHTML='<div class="aph-err">'+esc(String(e&&e.message||e))+'</div>';}
+  function loading(){document.getElementById('aph-content').innerHTML='<div class="aph-loading">Loading…</div>';}
+  function switchTab(t){state.tab=t;Array.prototype.forEach.call(document.querySelectorAll('.aph-side .nav-item'),function(x){x.classList.toggle('active',x.getAttribute('data-tab')===t);});fetchData();}
+  function fetchData(){loading();state.drills={};_ds=0;document.getElementById('aph-ttl').textContent=TITLES[state.tab];closeModal();
+    var fn={overview:ovw,batches:batches,batch360:batch360,logs:logs,requests:requests,dispatch:dispatch,mother:mother,trace:trace}[state.tab];fn().catch(setErr);}
+
+  var _ds=0;
+  function kpi(lbl,v,sub,icon,drl){
+    var a='',cls='aph-kpi';
+    if(drl&&drl.rows&&drl.rows.length){var id='k'+(_ds++);state.drills[id]=drl;a=' data-drill="'+id+'" title="Click to see what makes up this figure"';cls+=' kpi-click';}
+    return '<div class="'+cls+'"'+a+'>'+(icon?'<div class="ic-wrap">'+(ICONS[icon]||'')+'</div>':'')+'<div><div class="lbl">'+lbl+'</div><div class="v">'+v+'</div></div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
+  }
+  function drill(title,cols,rows){return {title:title,cols:cols,rows:rows};}
+  function regDrill(d){var id='k'+(_ds++);state.drills[id]=d;return id;}
+  function drillLink(html,d){return '<span class="drillable" data-drill="'+regDrill(d)+'" style="cursor:pointer;color:#1d4ed8;font-weight:600">'+html+'</span>';}
+  function batchLink(name,label){return '<span class="batch-link" data-batch="'+esc(name)+'">'+esc(label||name)+'</span>';}
+  function docLink(dt,name,label){return '<a class="txn" href="/app/'+dt+'/'+encodeURIComponent(name)+'" target="_blank" rel="noopener">'+esc(label||name)+'</a>';}
+  function showModal(title,html){var m=document.getElementById('aph-modal');m.querySelector('.aph-modal-ttl').innerHTML=title;m.querySelector('.aph-modal-body').innerHTML=html;m.style.display='flex';}
+  function closeModal(){var m=document.getElementById('aph-modal');if(m)m.style.display='none';}
+  function card(title,sub,body){return '<div class="aph-grid aph-full" style="margin-bottom:16px"><div class="aph-card"><div class="aph-card-hd"><div class="ttl">'+title+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'+body+'</div></div>';}
+  function chartCard(title,sub,id,h){return '<div class="aph-card"><div class="aph-card-hd"><div class="ttl">'+title+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div><div class="aph-chart-scroll"><div class="aph-chart-inner" id="'+id+'" style="height:'+(h||300)+'px"></div></div></div>';}
+  function tbl(cols,rows){
+    if(!rows||!rows.length)return '<div class="aph-empty">No data for the current filters</div>';
+    var h='<table class="aph-tbl"><thead><tr>'+cols.map(function(c){return '<th'+(c.num?' class="num"':'')+'>'+esc(c.h)+'</th>';}).join('')+'</tr></thead><tbody>';
+    h+=rows.map(function(r){return '<tr>'+cols.map(function(c){
+      var v=c.render?c.render(r[c.k],r):(c.num?fmt(r[c.k]):esc(r[c.k]==null?'—':r[c.k]));
+      var cl=[];if(c.num)cl.push('num');if(c.mono)cl.push('mono');if(c.dim)cl.push('dim');if(c.strong)cl.push('strong');
+      return '<td'+(cl.length?' class="'+cl.join(' ')+'"':'')+'>'+v+'</td>';}).join('')+'</tr>';}).join('');
+    return h+'</tbody></table>';}
+  function bars(rows,lblk,valk,fmtv){
+    if(!rows||!rows.length)return '<div class="aph-empty">No data</div>';
+    var max=1;rows.forEach(function(r){if((r[valk]||0)>max)max=r[valk];});
+    return rows.map(function(r){var p=(r[valk]||0)*100/max;
+      return '<div class="aph-bar-row"><div class="lbl">'+esc(r[lblk])+'</div><div class="bar"><div class="fill" style="width:'+p+'%"></div></div><div class="val">'+(fmtv?fmtv(r):fmt(r[valk]))+'</div></div>';}).join('');}
+  function funnelBars(funnel){
+    if(!funnel||!funnel.length)return '<div class="aph-empty">No submitted batches</div>';
+    return funnel.map(function(s){
+      return '<div class="aph-bar-row"><div class="lbl">'+esc(s.label)+'</div><div class="bar"><div class="fill" style="width:'+(s.percent||0)+'%"></div></div><div class="val">'+fmt(s.value)+' <span style="color:var(--text-3)">'+fmt1(s.percent)+'%</span></div></div>';
+    }).join('');}
+  function stageRail(pipeline){
+    var max=1;pipeline.forEach(function(r){if(r.seedlings>max)max=r.seedlings;});
+    return '<div class="stage-rail">'+pipeline.map(function(r){
+      return '<div class="st'+(r.batches?' live':'')+'"><div class="s">'+esc(r.stage)+'</div><div class="q">'+fmt(r.seedlings)+'</div><div class="b">'+r.batches+' '+(r.batches===1?'batch':'batches')+'</div><div class="fillbar" style="width:'+(r.seedlings*100/max)+'%"></div></div>';
+    }).join('')+'</div>';}
+  function hd(t,s){return '<div class="aph-page-hd"><div class="ttl">'+t+'</div><div class="sub">'+s+'</div></div>';}
+  function statusTag(s){var c='';var x=(s||'').toLowerCase();
+    if(/active|fulfilled|complet|submitted|paid|ready|grade a|good/.test(x))c=' good';
+    else if(/progress|partial|hardening|nursery|unpaid|overdue soon|draft|open|fair/.test(x))c=' warn';
+    else if(/cancel|reject|retired|diseased|poor|lost|dead/.test(x))c=' bad';
+    return '<span class="aph-tag'+c+'">'+esc(s||'—')+'</span>';}
+  function setBadge(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  function extLink(href,label){return '<a class="ext-link" href="'+href+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>'+esc(label)+'</a>';}
+  function filterNote(){var p=[];if(state.company)p.push(state.company);if(state.from||state.to)p.push((state.from||'…')+'→'+(state.to||'…'));if(state.done)p.push('incl. completed');return p.length?' · filtered: '+p.join(', '):'';}
+  function sumk(rows,k){return (rows||[]).reduce(function(a,r){return a+(Number(r[k])||0);},0);}
+
+  var CHART_BRAND='#2563eb';
+  function svgChart(wrapId,labels,series,height){
+    var el=document.getElementById(wrapId); if(!el) return;
+    var pick=function(c){return (!c||c==='#000')?CHART_BRAND:c;};
+    var sn=series.length;
+    var W=Math.max(el.clientWidth||700,320);
+    var H=height||((sn>1?(el.clientHeight-22):el.clientHeight)||280);
+    var maxLen=0; labels.forEach(function(l){var L=String(l==null?'':l).length; if(L>maxLen)maxLen=L;});
+    var lblFont=maxLen>16?8:(maxLen>9?9:10);
+    var padB=Math.min(110, 30+Math.round(maxLen*lblFont*0.55));
+    var padL=56,padR=14,padT=14, n=Math.max(labels.length,1);
+    var maxV=1; series.forEach(function(s){s.data.forEach(function(v){v=Number(v)||0;if(v>maxV)maxV=v;});});
+    var plotW=W-padL-padR, plotH=H-padT-padB, group=plotW/n, bw=Math.max(2,Math.min((group*0.72)/sn,44)), baseY=padT+plotH;
+    var nf=function(v){return Number(v).toLocaleString(undefined,{maximumFractionDigits:0});};
+    var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" font-family="Inter,system-ui,sans-serif">';
+    for(var g=0;g<=4;g++){var gy=padT+plotH*(1-g/4);
+      s+='<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+gy.toFixed(1)+'" stroke="#ececec"/>';
+      s+='<text x="'+(padL-6)+'" y="'+(gy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9a9a9a">'+nf(maxV*g/4)+'</text>';}
+    var step=Math.max(1,Math.ceil(n/Math.max(1,Math.floor(plotW/Math.max(26,lblFont*4.5)))));
+    for(var i=0;i<n;i++){
+      for(var j=0;j<sn;j++){var v=Number(series[j].data[i])||0,h=maxV?v/maxV*plotH:0,x=padL+i*group+(group-bw*sn)/2+j*bw,y=baseY-h;
+        s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw-1).toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="2" fill="'+pick(series[j].color)+'"><title>'+esc(String(labels[i]))+': '+nf(v)+'</title></rect>';}
+      if(i%step===0){var lx=padL+i*group+group/2, ly=baseY+12;
+        s+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="end" font-size="'+lblFont+'" fill="#6b6b6b" transform="rotate(-42 '+lx.toFixed(1)+' '+ly.toFixed(1)+')">'+esc(String(labels[i]))+'</text>';}
+    }
+    s+='</svg>';
+    var leg='';
+    if(sn>1){leg='<div style="display:flex;gap:16px;justify-content:flex-end;padding:2px 12px 0;font-size:11px;color:#6b6b6b">'+series.map(function(se){return '<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:'+pick(se.color)+'"></span>'+esc(se.name||'')+'</span>';}).join('')+'</div>';}
+    el.innerHTML=leg+s;
+  }
+  function barChart(wrapId,labels,data,color){svgChart(wrapId,labels,[{data:data,color:color||CHART_BRAND}]);}
+  function groupChart(wrapId,labels,sets){svgChart(wrapId,labels,sets.map(function(x){return {name:x.label,data:x.data,color:x.backgroundColor};}));}
+  function lineChart(wrapId,labels,data,color){
+    var el=document.getElementById(wrapId); if(!el) return;
+    color=color||CHART_BRAND;
+    var W=Math.max(el.clientWidth||700,320), H=el.clientHeight||300;
+    var maxLen=0; labels.forEach(function(l){var L=String(l==null?'':l).length;if(L>maxLen)maxLen=L;});
+    var lblFont=maxLen>16?8:(maxLen>9?9:10);
+    var padB=Math.min(100,30+Math.round(maxLen*lblFont*0.55)), padL=56,padR=14,padT=14, n=Math.max(labels.length,1);
+    var maxV=1; data.forEach(function(v){v=Number(v)||0;if(v>maxV)maxV=v;});
+    var plotW=W-padL-padR, plotH=H-padT-padB, baseY=padT+plotH;
+    var X=function(i){return padL+(n<=1?plotW/2:i*(plotW/(n-1)));};
+    var Y=function(v){return baseY-(maxV?(Number(v)||0)/maxV*plotH:0);};
+    var nf=function(v){return Number(v).toLocaleString(undefined,{maximumFractionDigits:0});};
+    var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" font-family="Inter,system-ui,sans-serif">';
+    for(var g=0;g<=4;g++){var gy=padT+plotH*(1-g/4);
+      s+='<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+gy.toFixed(1)+'" stroke="#ececec"/>';
+      s+='<text x="'+(padL-6)+'" y="'+(gy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9a9a9a">'+nf(maxV*g/4)+'</text>';}
+    var pts=data.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);});
+    if(pts.length){
+      s+='<path d="M'+X(0).toFixed(1)+','+baseY.toFixed(1)+' L'+pts.join(' L')+' L'+X(n-1).toFixed(1)+','+baseY.toFixed(1)+' Z" fill="'+color+'" fill-opacity="0.08"/>';
+      s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+      if(n<=45) data.forEach(function(v,i){s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="2.4" fill="'+color+'"><title>'+esc(String(labels[i]))+': '+nf(v)+'</title></circle>';});
+    }
+    var step=Math.max(1,Math.ceil(n/Math.max(1,Math.floor(plotW/Math.max(26,lblFont*4.5)))));
+    for(var i2=0;i2<n;i2++){ if(i2%step===0){var lx=X(i2),ly=baseY+12;
+      s+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="end" font-size="'+lblFont+'" fill="#6b6b6b" transform="rotate(-42 '+lx.toFixed(1)+' '+ly.toFixed(1)+')">'+esc(String(labels[i2]))+'</text>';}}
+    s+='</svg>'; el.innerHTML=s;
+  }
+
+  // ---- shared column sets ----
+  var batchCols=[
+    {h:'Batch',k:'name',strong:true,render:function(v,r){return batchLink(v)+'<div style="font-size:11px;color:var(--text-3)">week '+(r.iso_week||'—')+'/'+(r.iso_year||'—')+'</div>';}},
+    {h:'Variety',k:'variety_name',render:function(v,r){return esc(v||r.variety);}},
+    {h:'Stage',k:'current_stage',render:function(v){return statusTag(v);}},
+    {h:'Stuck',k:'total_cuttings_actual',num:true},{h:'Lost',k:'total_mortality',num:true},
+    {h:'Surviving',k:'total_survived',num:true,strong:true},
+    {h:'Out',k:'total_dispatched',num:true},{h:'Available',k:'available_to_dispatch',num:true,strong:true},
+    {h:'Success',k:'success_rate',num:true,render:function(v){return pct(v);}},
+    {h:'Cost/seedling',k:'cost_per_surviving_seedling',num:true,render:function(v){return kes(v);}}
+  ];
+  var dispCols=[
+    {h:'Date',k:'dispatch_date',mono:true,render:function(v,r){return d10(v)+'<div style="font-size:11px">'+batchLink(r.propagation_batch)+'</div>';}},
+    {h:'Purpose',k:'purpose',render:function(v){return v==='Sale'?'<span class="aph-tag warn">Sale</span>':'<span class="aph-tag good">To farm</span>';}},
+    {h:'Qty',k:'qty_dispatched',num:true,strong:true},{h:'Grade',k:'grade',dim:true},
+    {h:'Destination',k:'customer',render:function(v,r){return r.purpose==='Sale'?esc(v||'—'):esc(r.target_crop_cycle||r.target_greenhouse||'—');}},
+    {h:'Farm',k:'farm',dim:true},
+    {h:'Value',k:'amount',num:true,render:function(v){return v?kes(v):'—';}},
+    {h:'Invoice',k:'sales_invoice',render:function(v){return v?docLink('sales-invoice',v):'—';}}
+  ];
+  var logCols=[
+    {h:'Date',k:'log_date',mono:true},
+    {h:'Batch',k:'propagation_batch',render:function(v){return batchLink(v);}},
+    {h:'Activity',k:'activity_type',strong:true},
+    {h:'Done',k:'qty_done_today',num:true,strong:true},
+    {h:'Died',k:'mortality_today',num:true,render:function(v){return v?'<span class="aph-tag bad">'+fmt(v)+'</span>':'—';}},
+    {h:'Cumulative',k:'cumulative_qty',num:true,dim:true},{h:'Surviving',k:'surviving_qty',num:true},
+    {h:'Weather',k:'weather_conditions',dim:true},{h:'Logged by',k:'logged_by',dim:true},
+    {h:'',k:'name',render:function(v){return docLink('daily-propagation-log',v,'open ›');}}
+  ];
+  var reqCols=[
+    {h:'Request',k:'name',render:function(v){return docLink('seedling-request',v);}},
+    {h:'Farm',k:'farm',dim:true},{h:'Priority',k:'priority',dim:true},
+    {h:'Needed by',k:'required_by_date',mono:true,render:function(v,r){return d10(v)+(r.overdue?' <span class="aph-tag bad">overdue</span>':'');}},
+    {h:'Asked',k:'total_qty_requested',num:true},{h:'Delivered',k:'total_qty_dispatched',num:true,strong:true},
+    {h:'Pending',k:'pending',num:true,render:function(v){return v?'<span class="aph-tag warn">'+fmt(v)+'</span>':'—';}},
+    {h:'Fulfilled',k:'fulfilment_percentage',num:true,render:function(v){return pct(v);}},
+    {h:'Status',k:'status',render:function(v){return statusTag(v);}}
+  ];
+  var blockCols=[
+    {h:'Mother block',k:'name',strong:true,render:function(v){return docLink('mother-block',v);}},
+    {h:'Variety',k:'variety'},{h:'Status',k:'status',render:function(v){return statusTag(v);}},
+    {h:'Health',k:'health_status',dim:true},{h:'Plants',k:'plant_count',num:true},
+    {h:'Cuttings taken',k:'total_cuttings_taken',num:true,strong:true},
+    {h:'Last cutting',k:'last_cutting_date',mono:true,render:function(v){return d10(v);}}
+  ];
+  var harvestCols=[
+    {h:'Harvest',k:'name',render:function(v){return docLink('budwood-harvest',v);}},
+    {h:'When',k:'harvest_datetime',mono:true,render:function(v){return v?esc(String(v).substring(0,16)):'—';}},
+    {h:'Mother block',k:'mother_block',dim:true},{h:'Variety',k:'item_name',render:function(v,r){return esc(v||r.item);}},
+    {h:'Stems',k:'number_of_stems',num:true,strong:true},
+    {h:'Batch',k:'propagation_batch',render:function(v){return v?batchLink(v):'<span class="aph-tag warn">not booked</span>';}}
+  ];
+  var invCols=[
+    {h:'Invoice',k:'name',render:function(v){return docLink('sales-invoice',v);}},
+    {h:'Customer',k:'customer',strong:true},{h:'Date',k:'posting_date',mono:true,render:function(v){return d10(v);}},
+    {h:'Total',k:'grand_total',num:true,strong:true,render:function(v){return kes(v);}},
+    {h:'Outstanding',k:'outstanding_amount',num:true,render:function(v){return kes(v);}},
+    {h:'Status',k:'status',render:function(v){return statusTag(v);}}
+  ];
+
+  // ---- OVERVIEW ----
+  function ovw(){
+    return Promise.all([api('get_overview'),api('get_nursery_logs',dateArgs())]).then(function(R){
+      var o=R[0],L=R[1],k=o.kpis;
+      setBadge('bd-bt',fmt(o.batches.length));setBadge('bd-rq',fmt(o.requests.length));setBadge('bd-lg',fmt(L.logs.length));
+      var cards=kpi('Active batches',fmt(k.active_batches),'In the nursery now','box',drill('Active batches',batchCols,o.batches))+
+        kpi('Seedlings in the nursery',fmt(k.in_nursery),'Alive across active batches','leaf',drill('Active batches',batchCols,o.batches))+
+        kpi('Ready to dispatch',fmt(k.ready),'Graded and waiting','truck',drill('Batches with stock ready',batchCols,o.batches.filter(function(b){return b.available_to_dispatch>0;})))+
+        kpi('Cuttings lost',fmt(k.mortality),'<strong>'+pct(k.mortality_rate)+'</strong> of what was stuck','x',drill('Mortality by batch',[{h:'Batch',k:'propagation_batch',render:function(v){return batchLink(v);}},{h:'Logs',k:'logs',num:true,dim:true},{h:'Done',k:'done',num:true},{h:'Died',k:'dead',num:true,strong:true}],L.by_batch))+
+        kpi('Open requests',fmt(k.open_requests),'Farm demand outstanding','doc',drill('Open seedling requests',reqCols,o.requests))+
+        kpi('Planted this month',fmt(k.planted_this_month),'Into our own crop cycles','check',drill('Recent dispatches',dispCols,o.dispatches))+
+        kpi('Sold this month',fmt(k.sold_this_month),'Seedlings sold on','money',drill('Recent dispatches',dispCols,o.dispatches))+
+        kpi('Sales this month',kesM(k.revenue_this_month),'Seedling revenue','pl',drill('Recent dispatches',dispCols,o.dispatches));
+      var days=L.by_day.map(function(r){return r.log_date;});
+      var html=hd('Propagation overview','Cuttings in, seedlings out'+filterNote())+'<div class="aph-kpis">'+cards+'</div>'+
+        card('From cutting to dispatch','Every submitted batch, totalled','<div class="aph-card-body">'+funnelBars(o.funnel)+'</div>')+
+        card('Where the batches are standing','Seedlings alive at each nursery stage',''+stageRail(o.pipeline))+
+        '<div class="aph-grid">'+chartCard('Seedlings by stage','Alive per stage','pr-ov-stage')+chartCard('Nursery work logged','Cuttings handled per day','pr-ov-work')+'</div>'+
+        '<div class="aph-grid">'+chartCard('Mortality per day','Seedlings lost','pr-ov-dead')+chartCard('Dispatch split','Qty to farm vs sold','pr-ov-split')+'</div>'+
+        card('Active batches','Click a batch for its full trace','<div class="aph-card-body padless">'+tbl(batchCols,o.batches)+'</div>')+
+        '<div class="aph-grid"><div class="aph-card"><div class="aph-card-hd"><div class="ttl">Open requests</div></div><div class="aph-card-body padless">'+tbl(reqCols,o.requests)+'</div></div>'+
+        '<div class="aph-card"><div class="aph-card-hd"><div class="ttl">Recent dispatches</div></div><div class="aph-card-body padless">'+tbl(dispCols,o.dispatches)+'</div></div></div>';
+      document.getElementById('aph-content').innerHTML=html;
+      barChart('pr-ov-stage',o.pipeline.map(function(r){return r.stage;}),o.pipeline.map(function(r){return r.seedlings;}),'#2563eb');
+      lineChart('pr-ov-work',days,L.by_day.map(function(r){return r.done;}),'#16a34a');
+      lineChart('pr-ov-dead',days,L.by_day.map(function(r){return r.dead;}),'#dc2626');
+      var farm=sumk(o.dispatches.filter(function(d){return d.purpose!=='Sale';}),'qty_dispatched');
+      var sold=sumk(o.dispatches.filter(function(d){return d.purpose==='Sale';}),'qty_dispatched');
+      barChart('pr-ov-split',['To farm','Sold'],[farm,sold],'#2563eb');
+    });
+  }
+
+  // ---- BATCHES ----
+  function batches(){
+    return api('get_batches',{include_completed:state.done}).then(function(B){
+      var b=B.batches;
+      setBadge('bd-bt',fmt(b.length));
+      var planned=sumk(b,'total_cuttings_planned'),stuck=sumk(b,'total_cuttings_actual'),dead=sumk(b,'total_mortality');
+      var alive=sumk(b,'total_survived'),out=sumk(b,'total_dispatched'),avail=sumk(b,'available_to_dispatch');
+      var cost=sumk(b,'total_cost');
+      var varieties={};b.forEach(function(r){var v=varieties[r.variety]||(varieties[r.variety]={variety:r.variety_name||r.variety,batches:0,alive:0,avail:0});v.batches++;v.alive+=Number(r.total_survived)||0;v.avail+=Number(r.available_to_dispatch)||0;});
+      var vRows=Object.keys(varieties).map(function(k){return varieties[k];}).sort(function(a,b2){return b2.alive-a.alive;});
+      var vCols=[{h:'Variety',k:'variety',strong:true},{h:'Batches',k:'batches',num:true},{h:'Surviving',k:'alive',num:true,strong:true},{h:'Available',k:'avail',num:true}];
+      var cards=kpi('Batches',fmt(b.length),state.done?'Including completed':'Active only','box',drill('Batches',batchCols,b))+
+        kpi('Planned',fmt(planned),'Cuttings planned','doc',null)+
+        kpi('Stuck',fmt(stuck),(planned?pct(stuck*100/planned):'—')+' of plan','leaf',null)+
+        kpi('Lost',fmt(dead),(stuck?pct(dead*100/stuck):'—')+' mortality','x',null)+
+        kpi('Surviving',fmt(alive),'Alive now','check',drill('By variety',vCols,vRows))+
+        kpi('Dispatched',fmt(out),fmt(avail)+' still available','truck',null)+
+        kpi('Cost booked',kesM(cost),'Material + royalty + labour','money',null);
+      var html=hd('Batches','Every submitted batch · click a batch for its full trace'+filterNote())+'<div class="aph-kpis">'+cards+'</div>'+
+        '<div style="margin-bottom:18px">'+extLink('/app/propagation-batch','Open Propagation Batch list')+'</div>'+
+        card('From cutting to dispatch','Totalled across these batches','<div class="aph-card-body">'+funnelBars(B.funnel)+'</div>')+
+        card('Where they are standing','','' + stageRail(B.pipeline))+
+        '<div class="aph-grid">'+chartCard('Surviving by batch','Top 20','pr-bt-alive')+chartCard('Mortality by batch','Top 20','pr-bt-dead')+'</div>'+
+        card('All batches','Sorted newest week first','<div class="aph-card-body padless">'+tbl(batchCols,b)+'</div>')+
+        card('By variety','Which varieties are in the nursery','<div class="aph-card-body padless">'+tbl(vCols,vRows)+'</div>');
+      document.getElementById('aph-content').innerHTML=html;
+      var top=b.slice(0,20);
+      barChart('pr-bt-alive',top.map(function(r){return r.name;}),top.map(function(r){return r.total_survived;}),'#2563eb');
+      barChart('pr-bt-dead',top.map(function(r){return r.name;}),top.map(function(r){return r.total_mortality;}),'#dc2626');
+    });
+  }
+
+  // ---- BATCH 360 ----
+  function loadBatchList(){if(state.batchList)return Promise.resolve(state.batchList);
+    return api('get_batches',{include_completed:1}).then(function(B){state.batchList=B.batches;return B.batches;});}
+  function batch360(){
+    return loadBatchList().then(function(list){
+      var dl='<datalist id="batch-dl">'+list.map(function(b){return '<option value="'+esc(b.name+'  ('+(b.variety_name||b.variety||'')+')')+'"></option>';}).join('')+'</datalist>';
+      var cur=state.batchSel?list.filter(function(b){return b.name===state.batchSel;})[0]:null;
+      var picker='<div class="batch-pick"><input id="batch-input" list="batch-dl" placeholder="Search a batch by number or variety…" value="'+(cur?esc(cur.name+'  ('+(cur.variety_name||cur.variety||'')+')'):'')+'">'+dl+'<span class="hint">'+fmt(list.length)+' batches · type to search, then pick</span></div>';
+      if(!state.batchSel){
+        document.getElementById('aph-content').innerHTML=hd('Batch 360','Pick a batch to see it traced from mother block to invoice')+picker+
+          card('Recent batches','Click any batch','<div class="aph-card-body padless">'+tbl(batchCols,list.slice(0,25))+'</div>');
+        return;
+      }
+      return api('get_batch_detail',{name:state.batchSel}).then(function(D){
+        var b=D.batch;
+        var stageCols=[{h:'Stage',k:'stage',strong:true},{h:'Start',k:'start_date',mono:true,render:function(v){return d10(v);}},
+          {h:'End',k:'end_date',mono:true,render:function(v){return v?d10(v):'<span class="aph-tag warn">open</span>';}},
+          {h:'In',k:'qty_entered',num:true},{h:'Out',k:'qty_exited',num:true,render:function(v){return v?fmt(v):'—';}},
+          {h:'Lost',k:'lost',num:true,render:function(v){return v?'<span class="aph-tag bad">'+fmt(v)+'</span>':'—';}},
+          {h:'Days',k:'days_in_stage',num:true},{h:'Expected',k:'expected_days',num:true,dim:true},
+          {h:'',k:'over_expected',render:function(v){return v?'<span class="aph-tag bad">over</span>':'';}}];
+        function row(k,v){return '<div class="row"><div class="k">'+k+'</div><div class="v" title="'+esc(v||'—')+'">'+esc(v||'—')+'</div></div>';}
+        var prof='<div class="prof">'+row('Batch',b.name)+row('Title',b.batch_title)+row('Stage',b.current_stage)+
+          row('Variety',b.variety_name||b.variety)+row('Method',b.propagation_method)+row('Rootstock',b.rootstock_variety)+
+          row('ISO week',(b.iso_week||'')+'/'+(b.iso_year||''))+row('Started',b.start_date)+row('Nursery',b.propagation_unit)+
+          row('Mother block',b.mother_block)+row('Seedling request',b.seedling_request)+row('Company',b.company)+
+          row('Rooting medium',b.rooting_medium)+row('Hormone',b.rooting_hormone)+row('Grade A / B / cull',(b.grade_a_count||0)+' / '+(b.grade_b_count||0)+' / '+(b.cull_count||0))+
+          row('Material cost',kes(b.material_cost))+row('Royalty cost',kes(b.royalty_cost))+row('Labour cost',kes(b.labour_cost))+'</div>';
+        var invoiced=sumk(D.invoices,'grand_total');
+        var cards=kpi('Stuck',fmt(b.total_cuttings_actual),fmt(b.total_cuttings_planned)+' planned · '+fmt(b.total_cuttings_received)+' received','leaf',null)+
+          kpi('Lost',fmt(b.total_mortality),'Across '+fmt(D.logs.length)+' logs','x',drill('Daily logs',logCols,D.logs))+
+          kpi('Surviving',fmt(b.total_survived),pct(b.success_rate)+' success','check',null)+
+          kpi('Dispatched',fmt(b.total_dispatched),fmt(b.available_to_dispatch)+' still available','truck',drill('Dispatches',dispCols,D.dispatches))+
+          kpi('Cost / seedling',kes(b.cost_per_surviving_seedling),kes(b.total_cost)+' total','money',null)+
+          kpi('Invoiced',kesM(invoiced),fmt(D.invoices.length)+' invoices','pl',D.invoices.length?drill('Invoices',invCols,D.invoices):null);
+        var mb=D.mother_block,rq=D.request;
+        var mbBody=mb?('<div class="prof">'+row('Mother block',mb.name)+row('Variety',mb.variety)+row('Status',mb.status)+row('Health',mb.health_status)+row('Plants',fmt(mb.plant_count))+row('Cuttings taken',fmt(mb.total_cuttings_taken))+row('Last cutting',mb.last_cutting_date)+'</div>'):'<div class="aph-empty">No mother block linked</div>';
+        var rqBody=rq?('<div class="prof">'+row('Request',rq.name)+row('Status',rq.status)+row('Farm',rq.farm)+row('Needed by',rq.required_by_date)+row('Asked',fmt(rq.total_qty_requested))+row('Delivered',fmt(rq.total_qty_dispatched)+' ('+pct(rq.fulfilment_percentage)+')')+row('Reason',rq.reason)+'</div>'):'<div class="aph-empty">Speculative batch — no request behind it</div>';
+        var html=hd('Batch 360',esc(b.name)+' · '+esc(b.variety_name||b.variety)+' · '+esc(b.current_stage))+picker+
+          '<div style="margin-bottom:16px">'+extLink('/app/propagation-batch/'+encodeURIComponent(b.name),'Open batch record')+' &nbsp; '+extLink('/propagation/batch/'+encodeURIComponent(b.name),'Portal view')+'</div>'+
+          '<div class="aph-kpis">'+cards+'</div>'+
+          card('This batch, step by step','Planned → received → stuck → surviving → dispatched → available','<div class="aph-card-body">'+funnelBars(D.funnel)+'</div>')+
+          card('Batch details','Every field on the record','<div>'+prof+'</div>')+
+          '<div class="aph-grid"><div class="aph-card"><div class="aph-card-hd"><div class="ttl">1 · Where it came from</div></div>'+mbBody+'</div>'+
+          '<div class="aph-card"><div class="aph-card-hd"><div class="ttl">2 · What the farm asked for</div></div>'+rqBody+'</div></div>'+
+          card('Budwood booked in','Cuttings received into this batch','<div class="aph-card-body padless">'+tbl(harvestCols,D.harvests)+'</div>')+
+          card('3 · Through the nursery','Stage by stage, actual days against expected','<div class="aph-card-body padless">'+tbl(stageCols,D.stages)+'</div>')+
+          '<div class="aph-grid">'+chartCard('Work logged','Per log entry','pr-b3-work',280)+chartCard('Mortality','Per log entry','pr-b3-dead',280)+'</div>'+
+          card('4 · What was counted, day by day','Every daily log','<div class="aph-card-body padless">'+tbl(logCols,D.logs)+'</div>')+
+          card('5 · Where the seedlings went','Farm plantings and sales','<div class="aph-card-body padless">'+tbl(dispCols,D.dispatches)+'</div>')+
+          (D.invoices.length?card('6 · What was billed','Invoices raised from this batch','<div class="aph-card-body padless">'+tbl(invCols,D.invoices)+'</div>'):'');
+        document.getElementById('aph-content').innerHTML=html;
+        var lbl=D.logs.map(function(l){return String(l.log_date).substring(5)+' '+l.activity_type;});
+        barChart('pr-b3-work',lbl,D.logs.map(function(l){return l.qty_done_today;}),'#16a34a');
+        barChart('pr-b3-dead',lbl,D.logs.map(function(l){return l.mortality_today;}),'#dc2626');
+      });
+    });
+  }
+
+  // ---- DAILY LOGS ----
+  function logs(){
+    return api('get_nursery_logs',dateArgs()).then(function(L){
+      setBadge('bd-lg',fmt(L.logs.length));
+      var done=sumk(L.by_activity,'done'),dead=sumk(L.by_activity,'dead');
+      var actCols=[{h:'Activity',k:'activity_type',strong:true,render:function(v){return drillLink(esc(v),drill(esc(v)+' — logs',logCols,L.logs.filter(function(x){return (x.activity_type||'(unset)')===v;})));}},
+        {h:'Logs',k:'logs',num:true,dim:true},{h:'Done',k:'done',num:true,strong:true},{h:'Died',k:'dead',num:true}];
+      var batCols=[{h:'Batch',k:'propagation_batch',strong:true,render:function(v){return batchLink(v);}},{h:'Variety',k:'variety',dim:true},
+        {h:'Logs',k:'logs',num:true,dim:true},{h:'Done',k:'done',num:true},{h:'Died',k:'dead',num:true,strong:true}];
+      var cards=kpi('Log entries',fmt(L.logs.length),'In range','doc',drill('All logs',logCols,L.logs))+
+        kpi('Cuttings handled',fmt(done),'Summed across activities','leaf',drill('By activity',actCols,L.by_activity))+
+        kpi('Seedlings lost',fmt(dead),(done?pct(dead*100/done):'—')+' of handled','x',drill('By batch',batCols,L.by_batch))+
+        kpi('Batches logged',fmt(L.by_batch.length),'With activity in range','box',drill('By batch',batCols,L.by_batch))+
+        kpi('Busiest day',(L.by_day.length?esc(L.by_day.slice().sort(function(a,b){return b.done-a.done;})[0].log_date):'—'),'Most cuttings handled','clock',drill('By day',[{h:'Date',k:'log_date',mono:true},{h:'Done',k:'done',num:true,strong:true},{h:'Died',k:'dead',num:true}],L.by_day));
+      var days=L.by_day.map(function(r){return r.log_date;});
+      var html=hd('Daily logs','What the nursery recorded'+filterNote())+'<div class="aph-kpis">'+cards+'</div>'+
+        '<div style="margin-bottom:18px">'+extLink('/app/daily-propagation-log','Open Daily Propagation Log list')+'</div>'+
+        card('Work and mortality per day','Cuttings handled against seedlings lost','<div class="aph-chart-scroll"><div class="aph-chart-inner" id="pr-lg-day" style="height:320px"></div></div>')+
+        '<div class="aph-grid">'+chartCard('By activity','Cuttings handled','pr-lg-act')+chartCard('Mortality by batch','Top 20','pr-lg-bat')+'</div>'+
+        card('By activity','Click an activity for its logs','<div class="aph-card-body padless">'+tbl(actCols,L.by_activity)+'</div>')+
+        card('By batch','Where the losses are','<div class="aph-card-body padless">'+tbl(batCols,L.by_batch)+'</div>')+
+        card('All log entries','Newest first','<div class="aph-card-body padless">'+tbl(logCols,L.logs.slice(0,300))+'</div>');
+      document.getElementById('aph-content').innerHTML=html;
+      groupChart('pr-lg-day',days,[{label:'Done',data:L.by_day.map(function(r){return r.done;}),backgroundColor:'#16a34a'},{label:'Died',data:L.by_day.map(function(r){return r.dead;}),backgroundColor:'#dc2626'}]);
+      barChart('pr-lg-act',L.by_activity.map(function(r){return r.activity_type;}),L.by_activity.map(function(r){return r.done;}),'#2563eb');
+      barChart('pr-lg-bat',L.by_batch.slice(0,20).map(function(r){return r.propagation_batch;}),L.by_batch.slice(0,20).map(function(r){return r.dead;}),'#dc2626');
+    });
+  }
+
+  // ---- REQUESTS ----
+  function requests(){
+    return api('get_requests',{include_closed:state.done}).then(function(Q){
+      setBadge('bd-rq',fmt(Q.requests.length));
+      var asked=sumk(Q.requests,'total_qty_requested'),got=sumk(Q.requests,'total_qty_dispatched');
+      var overdue=Q.requests.filter(function(r){return r.overdue;});
+      var rowCols=[{h:'Request',k:'parent',render:function(v){return docLink('seedling-request',v);}},{h:'Variety',k:'variety',strong:true},
+        {h:'Asked',k:'qty_requested',num:true},{h:'Delivered',k:'qty_dispatched',num:true},{h:'Pending',k:'qty_pending',num:true,strong:true},
+        {h:'Target greenhouse',k:'target_greenhouse',dim:true}];
+      var stCols=[{h:'Status',k:'status',render:function(v){return statusTag(v);}},{h:'Requests',k:'requests',num:true},
+        {h:'Asked',k:'requested',num:true},{h:'Delivered',k:'dispatched',num:true,strong:true}];
+      var cards=kpi('Requests',fmt(Q.requests.length),state.done?'Including closed':'Open only','doc',drill('Requests',reqCols,Q.requests))+
+        kpi('Seedlings asked for',fmt(asked),'Across these requests','leaf',drill('Request lines',rowCols,Q.rows))+
+        kpi('Delivered',fmt(got),(asked?pct(got*100/asked):'—')+' of demand','check',drill('Requests',reqCols,Q.requests))+
+        kpi('Still pending',fmt(Math.max(0,asked-got)),'Seedlings owed to the farm','truck',drill('Request lines',rowCols,Q.rows.filter(function(r){return r.qty_pending>0;})))+
+        kpi('Overdue',fmt(overdue.length),'Past their required-by date','warn',overdue.length?drill('Overdue requests',reqCols,overdue):null);
+      var html=hd('Seedling requests','What the farm has asked the nursery for'+filterNote())+'<div class="aph-kpis">'+cards+'</div>'+
+        '<div style="margin-bottom:18px">'+extLink('/app/seedling-request','Open Seedling Request list')+'</div>'+
+        '<div class="aph-grid">'+chartCard('Asked vs delivered','By status','pr-rq-st')+chartCard('Pending by request','Seedlings owed','pr-rq-pd')+'</div>'+
+        (overdue.length?card('⚠ Overdue requests','Past the required-by date and not yet fulfilled','<div class="aph-card-body padless">'+tbl(reqCols,overdue)+'</div>'):'')+
+        card('All requests','Soonest required first','<div class="aph-card-body padless">'+tbl(reqCols,Q.requests)+'</div>')+
+        card('Request lines','Variety by variety','<div class="aph-card-body padless">'+tbl(rowCols,Q.rows)+'</div>')+
+        card('By status','','<div class="aph-card-body padless">'+tbl(stCols,Q.by_status)+'</div>');
+      document.getElementById('aph-content').innerHTML=html;
+      groupChart('pr-rq-st',Q.by_status.map(function(r){return r.status;}),[{label:'Asked',data:Q.by_status.map(function(r){return r.requested;}),backgroundColor:'#cbd5e1'},{label:'Delivered',data:Q.by_status.map(function(r){return r.dispatched;}),backgroundColor:'#2563eb'}]);
+      barChart('pr-rq-pd',Q.requests.map(function(r){return r.name;}),Q.requests.map(function(r){return r.pending;}),'#d97706');
+    });
+  }
+
+  // ---- DISPATCH & SALES ----
+  function dispatch(){
+    return api('get_dispatch_book',dateArgs()).then(function(D){
+      setBadge('bd-ds',fmt(D.dispatches.length));
+      var farm=(D.by_purpose.filter(function(r){return r.purpose!=='Sale';})[0]||{});
+      var sale=(D.by_purpose.filter(function(r){return r.purpose==='Sale';})[0]||{});
+      var revenue=sale.amount||0,outstanding=sumk(D.invoices,'outstanding_amount');
+      var custCols=[{h:'Customer',k:'customer',strong:true},{h:'Dispatches',k:'dispatches',num:true,dim:true},
+        {h:'Seedlings',k:'qty',num:true},{h:'Value',k:'amount',num:true,strong:true,render:function(v){return kes(v);}}];
+      var destCols=[{h:'Destination',k:'destination',strong:true},{h:'Dispatches',k:'dispatches',num:true,dim:true},{h:'Seedlings',k:'qty',num:true,strong:true}];
+      var monCols=[{h:'Month',k:'ym',mono:true},{h:'Planted',k:'planted',num:true},{h:'Sold',k:'sold',num:true},
+        {h:'Revenue',k:'revenue',num:true,strong:true,render:function(v){return kes(v);}}];
+      var uninvoiced=D.dispatches.filter(function(r){return r.purpose==='Sale'&&!r.sales_invoice;});
+      var cards=kpi('Dispatches',fmt(D.dispatches.length),'In range','truck',drill('All dispatches',dispCols,D.dispatches))+
+        kpi('Planted on the farm',fmt(farm.qty||0),fmt(farm.dispatches||0)+' deliveries','check',drill('To the farm',dispCols,D.dispatches.filter(function(r){return r.purpose!=='Sale';})))+
+        kpi('Sold',fmt(sale.qty||0),fmt(sale.dispatches||0)+' sales','money',drill('Sales',dispCols,D.dispatches.filter(function(r){return r.purpose==='Sale';})))+
+        kpi('Revenue',kesM(revenue),(sale.qty?kes(revenue/sale.qty)+' per seedling':'—'),'pl',drill('By customer',custCols,D.by_customer))+
+        kpi('Invoiced',kesM(sumk(D.invoices,'grand_total')),fmt(D.invoices.length)+' invoices · '+kesM(outstanding)+' outstanding','doc',D.invoices.length?drill('Invoices',invCols,D.invoices):null)+
+        kpi('Sales not invoiced',fmt(uninvoiced.length),'Sold but no invoice raised','warn',uninvoiced.length?drill('Sales without an invoice',dispCols,uninvoiced):null);
+      var html=hd('Dispatch & sales','Where seedlings went and what they earned'+filterNote())+'<div class="aph-kpis">'+cards+'</div>'+
+        '<div style="margin-bottom:18px">'+extLink('/app/seedling-dispatch','Open Seedling Dispatch list')+'</div>'+
+        '<div class="aph-grid">'+chartCard('Planted vs sold by month','Seedlings','pr-ds-mon')+chartCard('Revenue by month','KES','pr-ds-rev')+'</div>'+
+        '<div class="aph-grid">'+chartCard('Revenue by customer','KES','pr-ds-cust')+chartCard('Planted by destination','Seedlings','pr-ds-dest')+'</div>'+
+        (uninvoiced.length?card('⚠ Sales without an invoice','Seedlings sold with no Sales Invoice raised yet','<div class="aph-card-body padless">'+tbl(dispCols,uninvoiced)+'</div>'):'')+
+        card('By month','Planted, sold and revenue','<div class="aph-card-body padless">'+tbl(monCols,D.by_month)+'</div>')+
+        '<div class="aph-grid"><div class="aph-card"><div class="aph-card-hd"><div class="ttl">By customer</div></div><div class="aph-card-body padless">'+tbl(custCols,D.by_customer)+'</div></div>'+
+        '<div class="aph-card"><div class="aph-card-hd"><div class="ttl">By destination</div><div class="sub">Own plantings</div></div><div class="aph-card-body padless">'+tbl(destCols,D.by_destination)+'</div></div></div>'+
+        card('All dispatches','Newest first','<div class="aph-card-body padless">'+tbl(dispCols,D.dispatches)+'</div>')+
+        (D.invoices.length?card('Invoices','Raised from seedling sales','<div class="aph-card-body padless">'+tbl(invCols,D.invoices)+'</div>'):'');
+      document.getElementById('aph-content').innerHTML=html;
+      var months=D.by_month.map(function(r){return r.ym;});
+      groupChart('pr-ds-mon',months,[{label:'Planted',data:D.by_month.map(function(r){return r.planted;}),backgroundColor:'#16a34a'},{label:'Sold',data:D.by_month.map(function(r){return r.sold;}),backgroundColor:'#7c3aed'}]);
+      lineChart('pr-ds-rev',months,D.by_month.map(function(r){return r.revenue;}),'#16a34a');
+      barChart('pr-ds-cust',D.by_customer.map(function(r){return r.customer;}),D.by_customer.map(function(r){return r.amount;}),'#7c3aed');
+      barChart('pr-ds-dest',D.by_destination.map(function(r){return r.destination;}),D.by_destination.map(function(r){return r.qty;}),'#2563eb');
+    });
+  }
+
+  // ---- MOTHER STOCK ----
+  function mother(){
+    return api('get_mother_stock').then(function(M){
+      setBadge('bd-mb',fmt(M.blocks.length));
+      var plants=sumk(M.blocks,'plant_count'),taken=sumk(M.blocks,'total_cuttings_taken');
+      var stems=sumk(M.harvests,'number_of_stems'),unbooked=sumk(M.unassigned,'number_of_stems');
+      var active=M.blocks.filter(function(b){return b.status==='Active';});
+      var stCols=[{h:'Status',k:'status',render:function(v){return statusTag(v);}},{h:'Blocks',k:'blocks',num:true},
+        {h:'Plants',k:'plants',num:true},{h:'Cuttings taken',k:'taken',num:true,strong:true}];
+      var vCols=[{h:'Variety',k:'variety',strong:true},{h:'Blocks',k:'blocks',num:true},{h:'Cuttings taken',k:'taken',num:true,strong:true}];
+      var cards=kpi('Mother blocks',fmt(M.blocks.length),fmt(active.length)+' active','bldg',drill('Mother blocks',blockCols,M.blocks))+
+        kpi('Mother plants',fmt(plants),'Across all blocks','leaf',drill('By status',stCols,M.by_status))+
+        kpi('Cuttings taken',fmt(taken),'Lifetime, per block totals','sum',drill('By variety',vCols,M.by_variety))+
+        kpi('Budwood harvests',fmt(M.harvests.length),fmt(stems)+' stems recorded','doc',drill('Budwood harvests',harvestCols,M.harvests))+
+        kpi('Stems not booked',fmt(unbooked),fmt(M.unassigned.length)+' harvests with no batch','warn',M.unassigned.length?drill('Harvests not booked into a batch',harvestCols,M.unassigned):null);
+      var html=hd('Mother stock','The blocks the cuttings come from'+filterNote())+'<div class="aph-kpis">'+cards+'</div>'+
+        '<div style="margin-bottom:18px">'+extLink('/app/mother-block','Mother Blocks')+' &nbsp; '+extLink('/app/budwood-harvest','Budwood Harvests')+'</div>'+
+        '<div class="aph-grid">'+chartCard('Cuttings taken by variety','Top 15','pr-mb-var')+chartCard('Cuttings taken by block','Top 15','pr-mb-blk')+'</div>'+
+        (M.unassigned.length?card('⚠ Budwood not booked into a batch','These stems were harvested but never linked to a propagation batch, so they are not counted as cuttings received','<div class="aph-card-body padless">'+tbl(harvestCols,M.unassigned)+'</div>'):'')+
+        card('Mother blocks','Sorted by cuttings taken','<div class="aph-card-body padless">'+tbl(blockCols,M.blocks)+'</div>')+
+        '<div class="aph-grid"><div class="aph-card"><div class="aph-card-hd"><div class="ttl">By status</div></div><div class="aph-card-body padless">'+tbl(stCols,M.by_status)+'</div></div>'+
+        '<div class="aph-card"><div class="aph-card-hd"><div class="ttl">By variety</div></div><div class="aph-card-body padless">'+tbl(vCols,M.by_variety)+'</div></div></div>'+
+        card('Budwood harvests','Newest first','<div class="aph-card-body padless">'+tbl(harvestCols,M.harvests)+'</div>');
+      document.getElementById('aph-content').innerHTML=html;
+      barChart('pr-mb-var',M.by_variety.slice(0,15).map(function(r){return r.variety;}),M.by_variety.slice(0,15).map(function(r){return r.taken;}),'#2563eb');
+      var topB=M.blocks.slice(0,15);
+      barChart('pr-mb-blk',topB.map(function(r){return r.name;}),topB.map(function(r){return r.total_cuttings_taken;}),'#16a34a');
+    });
+  }
+
+  // ---- TRACEABILITY ----
+  function trace(){
+    var args={propagation_batch:state.batchSel||'',company:state.company||'',include_completed:state.done?1:0};
+    return frp('frappe.desk.query_report.run',{report_name:'Propagation Traceability',filters:JSON.stringify(args),ignore_prepared_report:1}).then(function(m){
+      var rows=(m&&m.result)||[];
+      var cols=[{h:'Step',k:'step',strong:true},
+        {h:'Document',k:'document',render:function(v,r){return v?docLink(String(r.document_type||'').toLowerCase().replace(/ /g,'-'),v):'—';}},
+        {h:'Date',k:'on_date',mono:true,render:function(v){return d10(v);}},
+        {h:'Qty',k:'qty',num:true},{h:'Amount',k:'amount',num:true,render:function(v){return v?kes(v):'—';}},
+        {h:'Status',k:'status',render:function(v){return statusTag(v);}},{h:'Detail',k:'detail',dim:true}];
+      var picker='<div class="batch-pick"><input id="trace-input" list="batch-dl" placeholder="Trace one batch (blank = recent batches)…" value="'+esc(state.batchSel||'')+'"><span class="hint">'+fmt(rows.length)+' rows</span></div>';
+      var dl=state.batchList?('<datalist id="batch-dl">'+state.batchList.map(function(b){return '<option value="'+esc(b.name)+'"></option>';}).join('')+'</datalist>'):'';
+      document.getElementById('aph-content').innerHTML=hd('Traceability','The whole chain as one list — mother block, budwood, request, stages, logs, dispatches, invoice'+filterNote())+picker+dl+
+        '<div style="margin-bottom:18px">'+extLink('/app/query-report/Propagation Traceability','Open the report in the desk')+'</div>'+
+        card('Propagation Traceability',(state.batchSel?esc(state.batchSel):'Most recent active batches'),'<div class="aph-card-body padless">'+tbl(cols,rows)+'</div>');
+      if(!state.batchList)loadBatchList();
+    });
+  }
+
+  // ---- wire ----
+  var root=document.querySelector('.aph');
+  root.addEventListener('click',function(e){
+    var bt=e.target.closest('[data-batch]');
+    if(bt){state.batchSel=bt.getAttribute('data-batch');switchTab('batch360');return;}
+    var k=e.target.closest('[data-drill]');
+    if(k){var d=state.drills[k.getAttribute('data-drill')];if(d)showModal(esc(d.title),tbl(d.cols,d.rows));}
+  });
+  root.addEventListener('change',function(e){
+    if(e.target&&e.target.id==='batch-input'){
+      var val=(e.target.value||'').trim();var id=val.split('  (')[0].trim();
+      if(state.batchList){var hit=state.batchList.filter(function(x){return x.name===id;})[0];if(hit)id=hit.name;}
+      if(id){state.batchSel=id;fetchData();}
+      return;
+    }
+    if(e.target&&e.target.id==='trace-input'){state.batchSel=(e.target.value||'').trim()||null;fetchData();return;}
+  });
+  document.getElementById('aph-modal-x').addEventListener('click',closeModal);
+  document.getElementById('aph-modal').addEventListener('click',function(e){if(e.target.id==='aph-modal')closeModal();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+  Array.prototype.forEach.call(document.querySelectorAll('.aph-side .nav-item'),function(el){el.addEventListener('click',function(){switchTab(el.getAttribute('data-tab'));});});
+  document.getElementById('aph-company').addEventListener('change',function(e){state.company=e.target.value;state.batchList=null;fetchData();});
+  document.getElementById('aph-from').addEventListener('change',function(e){state.from=e.target.value;fetchData();});
+  document.getElementById('aph-to').addEventListener('change',function(e){state.to=e.target.value;fetchData();});
+  document.getElementById('aph-done').addEventListener('click',function(){state.done=state.done?0:1;var b=document.getElementById('aph-done');b.textContent='Completed: '+(state.done?'on':'off');b.classList.toggle('on',!!state.done);state.batchList=null;fetchData();});
+  document.getElementById('aph-reload').addEventListener('click',function(){state.batchList=null;fetchData();});
+  document.getElementById('aph-clear').addEventListener('click',function(){state.company='';state.from='';state.to='';state.done=0;state.batchSel=null;state.batchList=null;
+    document.getElementById('aph-company').value='';document.getElementById('aph-from').value='';document.getElementById('aph-to').value='';
+    var b=document.getElementById('aph-done');b.textContent='Completed: off';b.classList.remove('on');fetchData();});
+  (function foot(){function go(){if(!window.frappe||!frappe.session){setTimeout(go,120);return;}var u=frappe.session.user||'';var nm=(frappe.session.user_fullname||u.split('@')[0]);
+    document.getElementById('aph-foot-av').textContent=(nm||'?').substring(0,1).toUpperCase();document.getElementById('aph-foot-nm').textContent=nm;document.getElementById('aph-foot-em').textContent=u;}go();})();
+  function opt(sel,vals){var s=document.getElementById(sel);vals.forEach(function(v){if(!v)return;var o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);});}
+  glist('Company',{fields:['name'],order_by:'name'}).catch(function(){return [];}).then(function(rows){opt('aph-company',rows.map(function(x){return x.name;}));});
+  fetchData();
+})();
+</script>

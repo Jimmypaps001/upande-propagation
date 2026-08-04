@@ -1,0 +1,33 @@
+{
+ "cards": [
+  {"card": "Active Propagation Batches", "doctype": "Number Card Link"},
+  {"card": "Seedlings In The Nursery", "doctype": "Number Card Link"},
+  {"card": "Seedlings Ready To Dispatch", "doctype": "Number Card Link"},
+  {"card": "Cuttings Lost In The Nursery", "doctype": "Number Card Link"},
+  {"card": "Open Seedling Requests", "doctype": "Number Card Link"},
+  {"card": "Seedlings Planted This Month", "doctype": "Number Card Link"},
+  {"card": "Seedlings Sold This Month", "doctype": "Number Card Link"},
+  {"card": "Seedling Sales This Month", "doctype": "Number Card Link"}
+ ],
+ "chart_options": "",
+ "charts": [
+  {"chart": "Propagation Funnel", "doctype": "Dashboard Chart Link", "width": "Full"},
+  {"chart": "Seedlings By Nursery Stage", "doctype": "Dashboard Chart Link", "width": "Half"},
+  {"chart": "Seedling Dispatch Split", "doctype": "Dashboard Chart Link", "width": "Half"},
+  {"chart": "Nursery Work Logged", "doctype": "Dashboard Chart Link", "width": "Half"},
+  {"chart": "Nursery Mortality", "doctype": "Dashboard Chart Link", "width": "Half"},
+  {"chart": "Seedling Request Fulfilment", "doctype": "Dashboard Chart Link", "width": "Half"}
+ ],
+ "creation": "2026-08-04 12:00:00.000000",
+ "dashboard_name": "Propagation",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-08-04 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Propagation",
+ "owner": "Administrator"
+}

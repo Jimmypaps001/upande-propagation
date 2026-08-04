@@ -1,0 +1,323 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ batch.name }}{% endblock %}
+
+{% block head_include %}
+{% include "templates/includes/propagation_styles.html" %}
+{% endblock %}
+
+{% block page_content %}
+<div class="prop-wrap">
+
+	<div class="prop-head">
+		<div>
+			<div class="prop-sub" style="margin:0 0 0.3rem;">
+				<a href="/propagation">{{ _("Propagation") }}</a> / {{ _("Batch") }}
+			</div>
+			<h1>{{ batch.name }}</h1>
+			<div class="prop-sub">
+				{{ batch.variety_name or batch.variety }} &middot;
+				{{ _(batch.propagation_method) }} &middot;
+				{{ _("week") }} {{ batch.iso_week }}/{{ batch.iso_year }} &middot;
+				{{ batch.propagation_unit or _("no nursery set") }}
+			</div>
+		</div>
+		<div class="prop-actions">
+			<span class="pill {{ 'green' if batch.current_stage == 'Completed' else 'blue' }}"
+				style="font-size:0.8rem; padding:0.3rem 0.7rem;">{{ _(batch.current_stage) }}</span>
+			<a class="btn btn-default btn-sm" href="/app/propagation-batch/{{ batch.name | urlencode }}">
+				{{ _("Open in Desk") }}</a>
+		</div>
+	</div>
+
+	<!-- ------------------------------------------------------------ numbers -->
+	<div class="prop-section">
+		<div class="prop-kpis">
+			<div class="prop-kpi">
+				<div class="v">{{ "{:,}".format(batch.total_cuttings_actual or 0) }}</div>
+				<div class="l">{{ _("Cuttings stuck") }}</div>
+				<div class="n">{{ "{:,}".format(batch.total_cuttings_planned or 0) }} {{ _("planned") }}</div>
+			</div>
+			<div class="prop-kpi red">
+				<div class="v">{{ "{:,}".format(batch.total_mortality or 0) }}</div>
+				<div class="l">{{ _("Lost") }}</div>
+			</div>
+			<div class="prop-kpi green">
+				<div class="v">{{ "{:,}".format(batch.total_survived or 0) }}</div>
+				<div class="l">{{ _("Surviving") }}</div>
+				<div class="n">{{ batch.success_rate or 0 }}% {{ _("success") }}</div>
+			</div>
+			<div class="prop-kpi violet">
+				<div class="v">{{ "{:,}".format(batch.total_dispatched or 0) }}</div>
+				<div class="l">{{ _("Dispatched") }}</div>
+			</div>
+			<div class="prop-kpi amber">
+				<div class="v">{{ "{:,}".format(batch.available_to_dispatch or 0) }}</div>
+				<div class="l">{{ _("Still available") }}</div>
+			</div>
+			<div class="prop-kpi teal">
+				<div class="v">{{ frappe.utils.fmt_money(batch.cost_per_surviving_seedling or 0) }}</div>
+				<div class="l">{{ _("Cost per surviving seedling") }}</div>
+				<div class="n">{{ frappe.utils.fmt_money(batch.total_cost or 0) }} {{ _("total") }}</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ------------------------------------------------------------- funnel -->
+	<div class="prop-section">
+		<h2>{{ _("This batch, step by step") }}</h2>
+		<div class="prop-card">
+			<div class="prop-funnel">
+				{% for step in funnel %}
+				<div class="row">
+					<div>{{ step.label }}</div>
+					<div class="track">
+						<div class="fill {% if loop.index == 4 %}loss{% elif loop.index > 4 %}out{% endif %}"
+							style="width: {{ step.percent }}%"></div>
+					</div>
+					<div class="num">{{ "{:,}".format(step.value) }}
+						<span class="pct">{{ step.percent }}%</span></div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+	<div class="prop-grid-2">
+		<!-- ---------------------------------------------------- mother block -->
+		<div class="prop-section" style="margin-bottom:0;">
+			<h2>{{ _("1 · Where it came from") }}</h2>
+			<div class="prop-card">
+				{% if mother_block %}
+				<dl class="prop-dl">
+					<dt>{{ _("Mother block") }}</dt>
+					<dd><a href="/app/mother-block/{{ mother_block.name | urlencode }}">{{ mother_block.name }}</a></dd>
+					<dt>{{ _("Variety") }}</dt><dd>{{ mother_block.variety }}</dd>
+					<dt>{{ _("Status") }}</dt>
+					<dd><span class="pill {{ 'green' if mother_block.status == 'Active' else 'amber' }}">{{ _(mother_block.status) }}</span>
+						{% if mother_block.health_status %}<span class="pill grey">{{ _(mother_block.health_status) }}</span>{% endif %}</dd>
+					<dt>{{ _("Plants") }}</dt><dd>{{ "{:,}".format(mother_block.plant_count or 0) }}</dd>
+					<dt>{{ _("Cuttings taken") }}</dt>
+					<dd>{{ "{:,}".format(mother_block.total_cuttings_taken or 0) }}
+						{% if mother_block.last_cutting_date %}
+						<span class="prop-sub">({{ _("last") }} {{ frappe.format(mother_block.last_cutting_date, "Date") }})</span>
+						{% endif %}</dd>
+				</dl>
+				{% else %}
+				<div class="prop-empty">{{ _("No mother block linked to this batch.") }}</div>
+				{% endif %}
+
+				{% if harvests %}
+				<div style="margin-top:1rem;">
+					<div class="prop-sub" style="margin-bottom:0.35rem;">{{ _("Budwood booked in") }}</div>
+					<table class="prop-table" style="min-width:0;">
+						<tbody>
+							{% for harvest in harvests %}
+							<tr>
+								<td><a href="/app/budwood-harvest/{{ harvest.name | urlencode }}">{{ harvest.name }}</a></td>
+								<td>{{ frappe.format(harvest.harvest_datetime, "Datetime") }}</td>
+								<td class="num">{{ "{:,}".format(harvest.number_of_stems or 0) }} {{ _("stems") }}</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<!-- -------------------------------------------------------- request -->
+		<div class="prop-section" style="margin-bottom:0;">
+			<h2>{{ _("2 · What the farm asked for") }}</h2>
+			<div class="prop-card">
+				{% if request %}
+				<dl class="prop-dl">
+					<dt>{{ _("Request") }}</dt>
+					<dd><a href="/app/seedling-request/{{ request.name | urlencode }}">{{ request.name }}</a></dd>
+					<dt>{{ _("Status") }}</dt>
+					<dd><span class="pill {{ 'green' if request.status == 'Fulfilled' else 'amber' }}">{{ _(request.status) }}</span></dd>
+					<dt>{{ _("Farm") }}</dt><dd>{{ request.farm or "—" }}</dd>
+					<dt>{{ _("Needed by") }}</dt><dd>{{ frappe.format(request.required_by_date, "Date") }}</dd>
+					<dt>{{ _("Delivered") }}</dt>
+					<dd>{{ "{:,}".format(request.total_qty_dispatched or 0) }} /
+						{{ "{:,}".format(request.total_qty_requested or 0) }}
+						<div class="prop-meter"><span style="width: {{ request.fulfilment_percentage or 0 }}%"></span></div>
+						<span class="prop-sub">{{ request.fulfilment_percentage or 0 }}%</span></dd>
+					{% if request.reason %}
+					<dt>{{ _("Reason") }}</dt><dd>{{ request.reason }}</dd>
+					{% endif %}
+				</dl>
+				{% else %}
+				<div class="prop-empty">{{ _("Speculative batch — no seedling request behind it.") }}</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	<!-- -------------------------------------------------------- stage timeline -->
+	<div class="prop-section" style="margin-top:2.25rem;">
+		<h2>{{ _("3 · Through the nursery") }}</h2>
+		<div class="prop-card">
+			{% if stages %}
+			<ul class="prop-timeline">
+				{% for stage in stages %}
+				<li class="{{ 'open' if stage.open else '' }}">
+					<div class="t">{{ _(stage.stage) }}
+						{% if stage.open %}<span class="pill amber">{{ _("in progress") }}</span>{% endif %}
+						{% if stage.over_expected %}<span class="pill red">{{ _("over expected") }}</span>{% endif %}
+					</div>
+					<div class="d">
+						{{ frappe.format(stage.start_date, "Date") }}
+						{% if stage.end_date %}&rarr; {{ frappe.format(stage.end_date, "Date") }}{% endif %}
+						&middot; {{ "{:,}".format(stage.qty_entered) }} {{ _("in") }}
+						{% if stage.qty_exited %}, {{ "{:,}".format(stage.qty_exited) }} {{ _("out") }}{% endif %}
+						{% if stage.lost %}<span class="pill red">-{{ stage.lost }}</span>{% endif %}
+						&middot; {{ stage.days_in_stage }} {{ _("of") }} {{ stage.expected_days }} {{ _("expected days") }}
+					</div>
+				</li>
+				{% endfor %}
+			</ul>
+			{% else %}
+			<div class="prop-empty">{{ _("No stages opened yet.") }}</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- ----------------------------------------------------------------- logs -->
+	<div class="prop-section">
+		<h2>{{ _("4 · What was counted, day by day") }}</h2>
+		{% if logs %}
+		<div class="prop-table-wrap">
+			<table class="prop-table">
+				<thead>
+					<tr>
+						<th>{{ _("Date") }}</th>
+						<th>{{ _("Activity") }}</th>
+						<th class="num">{{ _("Done") }}</th>
+						<th class="num">{{ _("Died") }}</th>
+						<th class="num">{{ _("Cumulative") }}</th>
+						<th class="num">{{ _("Surviving") }}</th>
+						<th>{{ _("Weather") }}</th>
+						<th>{{ _("Logged by") }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for log in logs %}
+					<tr>
+						<td>{{ frappe.format(log.log_date, "Date") }}
+							<div class="prop-sub" style="margin:0;font-size:0.72rem;">
+								<a href="/app/daily-propagation-log/{{ log.name | urlencode }}">{{ log.name }}</a></div>
+						</td>
+						<td>{{ _(log.activity_type) }}</td>
+						<td class="num">{{ "{:,}".format(log.qty_done_today or 0) }}</td>
+						<td class="num">
+							{% if log.mortality_today %}<span class="pill red">{{ log.mortality_today }}</span>
+							{% else %}—{% endif %}
+						</td>
+						<td class="num">{{ "{:,}".format(log.cumulative_qty or 0) }}</td>
+						<td class="num">{{ "{:,}".format(log.surviving_qty or 0) }}</td>
+						<td>{{ _(log.weather_conditions) if log.weather_conditions else "—" }}</td>
+						<td>{{ log.logged_by or "—" }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		{% else %}
+		<div class="prop-card prop-empty">{{ _("Nothing logged against this batch yet.") }}</div>
+		{% endif %}
+	</div>
+
+	<!-- ----------------------------------------------------------- dispatches -->
+	<div class="prop-section">
+		<h2>{{ _("5 · Where the seedlings went") }}</h2>
+		{% if dispatches %}
+		<div class="prop-table-wrap">
+			<table class="prop-table">
+				<thead>
+					<tr>
+						<th>{{ _("Date") }}</th>
+						<th>{{ _("Purpose") }}</th>
+						<th class="num">{{ _("Qty") }}</th>
+						<th>{{ _("Grade") }}</th>
+						<th>{{ _("Destination") }}</th>
+						<th class="num">{{ _("Rate") }}</th>
+						<th class="num">{{ _("Value") }}</th>
+						<th>{{ _("Invoice") }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for dispatch in dispatches %}
+					<tr>
+						<td>{{ frappe.format(dispatch.dispatch_date, "Date") }}
+							<div class="prop-sub" style="margin:0;font-size:0.72rem;">
+								<a href="/app/seedling-dispatch/{{ dispatch.name | urlencode }}">{{ dispatch.name }}</a></div>
+						</td>
+						<td>
+							{% if dispatch.purpose == "Sale" %}<span class="pill violet">{{ _("Sale") }}</span>
+							{% else %}<span class="pill green">{{ _("To farm") }}</span>{% endif %}
+						</td>
+						<td class="num">{{ "{:,}".format(dispatch.qty_dispatched or 0) }}</td>
+						<td>{{ dispatch.grade or "—" }}</td>
+						<td>
+							{% if dispatch.purpose == "Sale" %}{{ dispatch.customer }}
+							{% else %}
+								{{ dispatch.target_crop_cycle or "—" }}
+								{% if dispatch.target_greenhouse %}
+								<div class="prop-sub" style="margin:0;font-size:0.72rem;">{{ dispatch.target_greenhouse }}</div>
+								{% endif %}
+							{% endif %}
+							{% if dispatch.farm %}<div class="prop-sub" style="margin:0;font-size:0.72rem;">{{ dispatch.farm }}</div>{% endif %}
+						</td>
+						<td class="num">{% if dispatch.selling_rate %}{{ frappe.utils.fmt_money(dispatch.selling_rate) }}{% else %}—{% endif %}</td>
+						<td class="num">{% if dispatch.amount %}{{ frappe.utils.fmt_money(dispatch.amount) }}{% else %}—{% endif %}</td>
+						<td>
+							{% if dispatch.sales_invoice %}
+							<a href="/app/sales-invoice/{{ dispatch.sales_invoice | urlencode }}">{{ dispatch.sales_invoice }}</a>
+							{% else %}—{% endif %}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		{% else %}
+		<div class="prop-card prop-empty">{{ _("Nothing has left this batch yet.") }}</div>
+		{% endif %}
+	</div>
+
+	<!-- ------------------------------------------------------------- invoices -->
+	{% if invoices %}
+	<div class="prop-section">
+		<h2>{{ _("6 · What was billed") }}</h2>
+		<div class="prop-table-wrap">
+			<table class="prop-table" style="min-width:0;">
+				<thead>
+					<tr>
+						<th>{{ _("Invoice") }}</th>
+						<th>{{ _("Customer") }}</th>
+						<th>{{ _("Date") }}</th>
+						<th class="num">{{ _("Total") }}</th>
+						<th class="num">{{ _("Outstanding") }}</th>
+						<th>{{ _("Status") }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for invoice in invoices %}
+					<tr>
+						<td><a href="/app/sales-invoice/{{ invoice.name | urlencode }}">{{ invoice.name }}</a></td>
+						<td>{{ invoice.customer }}</td>
+						<td>{{ frappe.format(invoice.posting_date, "Date") }}</td>
+						<td class="num">{{ frappe.utils.fmt_money(invoice.grand_total, currency=invoice.currency) }}</td>
+						<td class="num">{{ frappe.utils.fmt_money(invoice.outstanding_amount, currency=invoice.currency) }}</td>
+						<td><span class="pill {{ 'green' if invoice.status == 'Paid' else 'amber' }}">{{ _(invoice.status) }}</span></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	{% endif %}
+
+</div>
+{% endblock %}

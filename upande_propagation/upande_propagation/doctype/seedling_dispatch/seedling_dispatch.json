@@ -1,0 +1,286 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-04 09:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "dispatch_date",
+  "purpose",
+  "propagation_batch",
+  "variety",
+  "variety_name",
+  "column_break_1",
+  "seedling_request",
+  "available_to_dispatch",
+  "current_stage",
+  "section_break_qty",
+  "qty_dispatched",
+  "grade",
+  "column_break_qty",
+  "farm",
+  "target_greenhouse",
+  "target_crop_cycle",
+  "section_break_sale",
+  "customer",
+  "selling_rate",
+  "column_break_sale",
+  "amount",
+  "sales_invoice",
+  "section_break_other",
+  "received_by",
+  "company",
+  "column_break_other",
+  "notes",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SD-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "dispatch_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Dispatch Date",
+   "reqd": 1
+  },
+  {
+   "default": "Internal Planting",
+   "description": "Planted on our own farm, or sold to a customer",
+   "fieldname": "purpose",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Purpose",
+   "options": "Internal Planting\nSale",
+   "reqd": 1
+  },
+  {
+   "fieldname": "propagation_batch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Propagation Batch",
+   "options": "Propagation Batch",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "propagation_batch.variety",
+   "fieldname": "variety",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Variety",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "variety.item_name",
+   "fieldname": "variety_name",
+   "fieldtype": "Data",
+   "label": "Variety Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Request these seedlings are delivered against",
+   "fetch_from": "propagation_batch.seedling_request",
+   "fetch_if_empty": 1,
+   "fieldname": "seedling_request",
+   "fieldtype": "Link",
+   "label": "Seedling Request",
+   "options": "Seedling Request"
+  },
+  {
+   "fetch_from": "propagation_batch.available_to_dispatch",
+   "fieldname": "available_to_dispatch",
+   "fieldtype": "Int",
+   "label": "Available To Dispatch",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "propagation_batch.current_stage",
+   "fieldname": "current_stage",
+   "fieldtype": "Data",
+   "label": "Batch Stage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_qty",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "qty_dispatched",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty Dispatched",
+   "reqd": 1
+  },
+  {
+   "fieldname": "grade",
+   "fieldtype": "Select",
+   "label": "Grade",
+   "options": "\nGrade A\nGrade B"
+  },
+  {
+   "fieldname": "column_break_qty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Farm the seedlings are delivered to, or sold out of",
+   "fieldname": "farm",
+   "fieldtype": "Link",
+   "label": "Farm",
+   "options": "Farm"
+  },
+  {
+   "fieldname": "target_greenhouse",
+   "fieldtype": "Link",
+   "label": "Target Greenhouse",
+   "options": "Warehouse"
+  },
+  {
+   "description": "Crop cycle these seedlings are planted into",
+   "fieldname": "target_crop_cycle",
+   "fieldtype": "Link",
+   "label": "Target Crop Cycle",
+   "options": "Crop Cycle"
+  },
+  {
+   "depends_on": "eval:doc.purpose == 'Sale'",
+   "fieldname": "section_break_sale",
+   "fieldtype": "Section Break",
+   "label": "Sale"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "mandatory_depends_on": "eval:doc.purpose == 'Sale'",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "selling_rate",
+   "fieldtype": "Currency",
+   "label": "Rate Per Seedling",
+   "mandatory_depends_on": "eval:doc.purpose == 'Sale'"
+  },
+  {
+   "fieldname": "column_break_sale",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "options": "Sales Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_other",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "received_by",
+   "fieldtype": "Link",
+   "label": "Received By",
+   "options": "User"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_other",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Seedling Dispatch",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-08-04 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Seedling Dispatch",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agriculture Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agriculture User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,99 @@
+<style>
+	.prop-wrap { max-width: 1180px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+	.prop-head { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
+		justify-content: space-between; margin-bottom: 1.75rem; }
+	.prop-head h1 { margin: 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+	.prop-sub { color: var(--text-muted, #6b7280); font-size: 0.9rem; margin-top: 0.25rem; }
+	.prop-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+	.prop-section { margin-bottom: 2.25rem; }
+	.prop-section > h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+		color: var(--text-muted, #6b7280); margin: 0 0 0.85rem; font-weight: 600; }
+
+	.prop-card { background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e5e7eb);
+		border-radius: 10px; padding: 1.1rem 1.25rem; }
+
+	.prop-kpis { display: grid; gap: 0.75rem;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+	.prop-kpi { background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e5e7eb);
+		border-left: 3px solid var(--accent, #7575ff); border-radius: 8px; padding: 0.85rem 1rem; }
+	.prop-kpi .v { font-size: 1.6rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+	.prop-kpi .l { font-size: 0.75rem; color: var(--text-muted, #6b7280); margin-top: 0.2rem; }
+	.prop-kpi .n { font-size: 0.7rem; color: var(--text-light, #9ca3af); margin-top: 0.15rem; }
+	.prop-kpi.green { --accent: #22c55e; } .prop-kpi.amber { --accent: #f59e0b; }
+	.prop-kpi.red { --accent: #ef4444; }   .prop-kpi.violet { --accent: #8b5cf6; }
+	.prop-kpi.teal { --accent: #14b8a6; }
+
+	.prop-funnel { display: grid; gap: 0.5rem; }
+	.prop-funnel .row { display: grid; grid-template-columns: 150px 1fr 110px; gap: 0.75rem;
+		align-items: center; font-size: 0.85rem; }
+	.prop-funnel .track { background: var(--control-bg, #f3f4f6); border-radius: 5px; height: 26px;
+		overflow: hidden; }
+	.prop-funnel .fill { height: 100%; border-radius: 5px;
+		background: linear-gradient(90deg, #7575ff, #a78bfa); }
+	.prop-funnel .fill.loss { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+	.prop-funnel .fill.out  { background: linear-gradient(90deg, #22c55e, #4ade80); }
+	.prop-funnel .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+	.prop-funnel .pct { color: var(--text-muted, #6b7280); font-weight: 400; font-size: 0.78rem; }
+
+	.prop-pipeline { display: grid; gap: 0.5rem;
+		grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+	.prop-step { border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px;
+		padding: 0.7rem 0.8rem; background: var(--card-bg, #fff); position: relative; overflow: hidden; }
+	.prop-step .bar { position: absolute; left: 0; bottom: 0; height: 3px; background: #7575ff; }
+	.prop-step .s { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;
+		color: var(--text-muted, #6b7280); }
+	.prop-step .q { font-size: 1.15rem; font-weight: 700; margin-top: 0.2rem;
+		font-variant-numeric: tabular-nums; }
+	.prop-step .b { font-size: 0.72rem; color: var(--text-light, #9ca3af); }
+	.prop-step.busy { border-color: #7575ff; box-shadow: 0 0 0 1px rgba(117,117,255,0.25); }
+
+	.prop-table-wrap { overflow-x: auto; border: 1px solid var(--border-color, #e5e7eb);
+		border-radius: 10px; background: var(--card-bg, #fff); }
+	table.prop-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 640px; }
+	table.prop-table th { text-align: left; font-weight: 600; font-size: 0.72rem; text-transform: uppercase;
+		letter-spacing: 0.05em; color: var(--text-muted, #6b7280); padding: 0.65rem 0.9rem;
+		border-bottom: 1px solid var(--border-color, #e5e7eb); white-space: nowrap; }
+	table.prop-table td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--border-color, #f3f4f6);
+		vertical-align: middle; }
+	table.prop-table tr:last-child td { border-bottom: 0; }
+	table.prop-table td.num, table.prop-table th.num { text-align: right;
+		font-variant-numeric: tabular-nums; }
+
+	.pill { display: inline-block; padding: 0.12rem 0.5rem; border-radius: 999px; font-size: 0.72rem;
+		font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
+	.pill.grey   { background: #f3f4f6; color: #4b5563; }
+	.pill.blue   { background: #eef2ff; color: #4338ca; }
+	.pill.green  { background: #ecfdf5; color: #047857; }
+	.pill.amber  { background: #fffbeb; color: #b45309; }
+	.pill.red    { background: #fef2f2; color: #b91c1c; }
+	.pill.violet { background: #f5f3ff; color: #6d28d9; }
+
+	.prop-meter { background: var(--control-bg, #f3f4f6); border-radius: 999px; height: 6px;
+		width: 90px; overflow: hidden; display: inline-block; vertical-align: middle; }
+	.prop-meter > span { display: block; height: 100%; background: #22c55e; border-radius: 999px; }
+
+	.prop-grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+	.prop-empty { color: var(--text-muted, #6b7280); font-size: 0.85rem; padding: 1rem 0; }
+	.prop-dl { display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.9rem; font-size: 0.85rem; margin: 0; }
+	.prop-dl dt { color: var(--text-muted, #6b7280); }
+	.prop-dl dd { margin: 0; font-weight: 500; }
+
+	.prop-timeline { list-style: none; margin: 0; padding: 0 0 0 1.1rem;
+		border-left: 2px solid var(--border-color, #e5e7eb); }
+	.prop-timeline li { position: relative; padding: 0 0 1.1rem 0.6rem; }
+	.prop-timeline li::before { content: ""; position: absolute; left: -1.75rem; top: 0.25rem;
+		width: 11px; height: 11px; border-radius: 50%; background: #7575ff;
+		box-shadow: 0 0 0 3px var(--card-bg, #fff); }
+	.prop-timeline li.open::before { background: #f59e0b; }
+	.prop-timeline li .t { font-weight: 600; font-size: 0.9rem; }
+	.prop-timeline li .d { font-size: 0.8rem; color: var(--text-muted, #6b7280); margin-top: 0.15rem; }
+
+	@media (prefers-color-scheme: dark) {
+		.prop-card, .prop-kpi, .prop-step, .prop-table-wrap { background: #1c1c1f; border-color: #2f3033; }
+		table.prop-table th { border-bottom-color: #2f3033; }
+		table.prop-table td { border-bottom-color: #26272a; }
+		.prop-funnel .track, .prop-meter { background: #2a2b2f; }
+		.pill.grey { background: #2a2b2f; color: #d1d5db; }
+	}
+</style>

@@ -8,7 +8,8 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# required_apps = []
+# Seedling Dispatch links to Crop Cycle, which upande_agriculture owns.
+required_apps = ["upande_agriculture"]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -63,6 +64,13 @@ app_license = "mit"
 # role_home_page = {
 # 	"Role": "home_page"
 # }
+
+# Portal pages
+# ------------
+
+website_route_rules = [
+	{"from_route": "/propagation/batch/<path:name>", "to_route": "propagation/batch"},
+]
 
 # Generators
 # ----------
@@ -255,4 +263,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

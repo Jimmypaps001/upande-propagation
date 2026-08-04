@@ -1,0 +1,265 @@
+{
+ "app": "upande_propagation",
+ "charts": [
+  {
+   "chart_name": "Propagation Funnel",
+   "label": "Propagation Funnel"
+  },
+  {
+   "chart_name": "Seedlings By Nursery Stage",
+   "label": "Seedlings By Nursery Stage"
+  },
+  {
+   "chart_name": "Seedling Dispatch Split",
+   "label": "Seedling Dispatch Split"
+  },
+  {
+   "chart_name": "Nursery Work Logged",
+   "label": "Nursery Work Logged"
+  },
+  {
+   "chart_name": "Nursery Mortality",
+   "label": "Nursery Mortality"
+  },
+  {
+   "chart_name": "Seedling Request Fulfilment",
+   "label": "Seedling Request Fulfilment"
+  }
+ ],
+ "content": "[{\"id\":\"prop_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Propagation</b></span>\",\"col\":12}},{\"id\":\"prop_nc_1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Propagation Batches\",\"col\":3}},{\"id\":\"prop_nc_2\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Seedlings In The Nursery\",\"col\":3}},{\"id\":\"prop_nc_3\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Seedlings Ready To Dispatch\",\"col\":3}},{\"id\":\"prop_nc_4\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Seedling Requests\",\"col\":3}},{\"id\":\"prop_nc_5\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Seedlings Planted This Month\",\"col\":3}},{\"id\":\"prop_nc_6\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Seedlings Sold This Month\",\"col\":3}},{\"id\":\"prop_nc_7\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Seedling Sales This Month\",\"col\":3}},{\"id\":\"prop_nc_8\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Cuttings Lost In The Nursery\",\"col\":3}},{\"id\":\"prop_h_funnel\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h6\\\">Cuttings in, seedlings out</span>\",\"col\":12}},{\"id\":\"prop_ch_funnel\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Propagation Funnel\",\"col\":12}},{\"id\":\"prop_h_nursery\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h6\\\">In the nursery</span>\",\"col\":12}},{\"id\":\"prop_ch_stage\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Seedlings By Nursery Stage\",\"col\":6}},{\"id\":\"prop_ch_split\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Seedling Dispatch Split\",\"col\":6}},{\"id\":\"prop_ch_work\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Nursery Work Logged\",\"col\":6}},{\"id\":\"prop_ch_mort\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Nursery Mortality\",\"col\":6}},{\"id\":\"prop_ch_fulfil\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Seedling Request Fulfilment\",\"col\":6}},{\"id\":\"prop_spacer_1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"prop_short_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Propagation Batch\",\"col\":3}},{\"id\":\"prop_short_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Seedling Request\",\"col\":3}},{\"id\":\"prop_short_3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Seedling Dispatch\",\"col\":3}},{\"id\":\"prop_short_4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Traceability\",\"col\":3}},{\"id\":\"prop_short_5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Portal View\",\"col\":3}},{\"id\":\"prop_short_6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Propagation Dashboard\",\"col\":3}},{\"id\":\"prop_spacer_2\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"prop_card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Demand\",\"col\":4}},{\"id\":\"prop_card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Mother Stock\",\"col\":4}},{\"id\":\"prop_card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Nursery\",\"col\":4}},{\"id\":\"prop_card_4\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}},{\"id\":\"prop_card_5\",\"type\":\"card\",\"data\":{\"card_name\":\"Setup\",\"col\":4}}]",
+ "creation": "2026-08-04 11:51:02.648481",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "leaf",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Propagation",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Demand",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Seedling Request",
+   "link_count": 0,
+   "link_to": "Seedling Request",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Mother Stock",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Mother Block",
+   "link_count": 0,
+   "link_to": "Mother Block",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Budwood Harvest",
+   "link_count": 0,
+   "link_to": "Budwood Harvest",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Nursery",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Propagation Batch",
+   "link_count": 0,
+   "link_to": "Propagation Batch",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Daily Propagation Log",
+   "link_count": 0,
+   "link_to": "Daily Propagation Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Seedling Dispatch",
+   "link_count": 0,
+   "link_to": "Seedling Dispatch",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "Propagation Batch",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Propagation Traceability",
+   "link_count": 0,
+   "link_to": "Propagation Traceability",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Setup",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Propagation Settings",
+   "link_count": 0,
+   "link_to": "Propagation Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Crop Type",
+   "link_count": 0,
+   "link_to": "Crop Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-08-04 12:14:08.651431",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Propagation",
+ "number_cards": [
+  {
+   "label": "Active Propagation Batches",
+   "number_card_name": "Active Propagation Batches"
+  },
+  {
+   "label": "Seedlings In The Nursery",
+   "number_card_name": "Seedlings In The Nursery"
+  },
+  {
+   "label": "Seedlings Ready To Dispatch",
+   "number_card_name": "Seedlings Ready To Dispatch"
+  },
+  {
+   "label": "Open Seedling Requests",
+   "number_card_name": "Open Seedling Requests"
+  },
+  {
+   "label": "Seedlings Planted This Month",
+   "number_card_name": "Seedlings Planted This Month"
+  },
+  {
+   "label": "Seedlings Sold This Month",
+   "number_card_name": "Seedlings Sold This Month"
+  },
+  {
+   "label": "Seedling Sales This Month",
+   "number_card_name": "Seedling Sales This Month"
+  },
+  {
+   "label": "Cuttings Lost In The Nursery",
+   "number_card_name": "Cuttings Lost In The Nursery"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 72.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Propagation Batch",
+   "link_to": "Propagation Batch",
+   "stats_filter": "{\"current_stage\":[\"!=\",\"Completed\"],\"docstatus\":[\"=\",1]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Seedling Request",
+   "link_to": "Seedling Request",
+   "stats_filter": "{\"status\":[\"not in\",[\"Fulfilled\",\"Cancelled\"]]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Seedling Dispatch",
+   "link_to": "Seedling Dispatch",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "label": "Traceability",
+   "link_to": "Propagation Traceability",
+   "report_ref_doctype": "Propagation Batch",
+   "type": "Report"
+  },
+  {
+   "color": "Cyan",
+   "doc_view": "",
+   "label": "Portal View",
+   "type": "URL",
+   "url": "/propagation"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "",
+   "label": "Propagation Dashboard",
+   "link_to": "Propagation",
+   "type": "Dashboard"
+  }
+ ],
+ "title": "Propagation",
+ "type": "Workspace"
+}
