@@ -141,6 +141,7 @@ table.aph-tbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="nav" id="aph-nav">
       <div class="group-lbl">Summary</div>
       <div class="nav-item active" data-tab="overview"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Overview</div>
+      <div class="nav-item" data-tab="insights"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="4" width="3" height="14"/></svg>Dashboard<span class="badge" id="bd-ch"></span></div>
       <div class="group-lbl">Nursery</div>
       <div class="nav-item" data-tab="batches"><svg class="ic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg>Batches<span class="badge" id="bd-bt"></span></div>
       <div class="nav-item" data-tab="batch360"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Batch 360</div>
@@ -174,7 +175,9 @@ table.aph-tbl{width:100%;border-collapse:collapse;font-size:13px}
 (function(){
   var API='upande_propagation.api.';
   var state={tab:'overview',company:'',from:'',to:'',done:0,batchSel:null,drills:{},batchList:null};
-  var TITLES={overview:'Overview',batches:'Batches',batch360:'Batch 360',logs:'Daily Logs',requests:'Seedling Requests',dispatch:'Dispatch & Sales',mother:'Mother Stock',trace:'Traceability'};
+  var TITLES={overview:'Overview',insights:'Dashboard',batches:'Batches',batch360:'Batch 360',logs:'Daily Logs',requests:'Seedling Requests',dispatch:'Dispatch & Sales',mother:'Mother Stock',trace:'Traceability'};
+  var MODULE='Upande Propagation';
+  var FUNNEL_SOURCE='upande_propagation.upande_propagation.dashboard_chart_source.propagation_funnel.propagation_funnel.get';
   var STAGES=['Cutting','Sticking','Callusing','Rooting','Nursery','Hardening','Ready for Dispatch'];
   var ICONS={
     box:'<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg>',
@@ -212,7 +215,7 @@ table.aph-tbl{width:100%;border-collapse:collapse;font-size:13px}
   function loading(){document.getElementById('aph-content').innerHTML='<div class="aph-loading">Loading…</div>';}
   function switchTab(t){state.tab=t;Array.prototype.forEach.call(document.querySelectorAll('.aph-side .nav-item'),function(x){x.classList.toggle('active',x.getAttribute('data-tab')===t);});fetchData();}
   function fetchData(){loading();state.drills={};_ds=0;document.getElementById('aph-ttl').textContent=TITLES[state.tab];closeModal();
-    var fn={overview:ovw,batches:batches,batch360:batch360,logs:logs,requests:requests,dispatch:dispatch,mother:mother,trace:trace}[state.tab];fn().catch(setErr);}
+    var fn={overview:ovw,insights:insights,batches:batches,batch360:batch360,logs:logs,requests:requests,dispatch:dispatch,mother:mother,trace:trace}[state.tab];fn().catch(setErr);}
 
   var _ds=0;
   function kpi(lbl,v,sub,icon,drl){
@@ -413,6 +416,78 @@ table.aph-tbl{width:100%;border-collapse:collapse;font-size:13px}
       var farm=sumk(o.dispatches.filter(function(d){return d.purpose!=='Sale';}),'qty_dispatched');
       var sold=sumk(o.dispatches.filter(function(d){return d.purpose==='Sale';}),'qty_dispatched');
       barChart('pr-ov-split',['To farm','Sold'],[farm,sold],'#2563eb');
+    });
+  }
+
+  // ---- DASHBOARD (the site's own Number Cards + Dashboard Charts) ----
+  var CARD_FIELDS=["name","label","type","document_type","parent_document_type","report_name",
+    "function","aggregate_function_based_on","filters_json","dynamic_filters_json","report_function",
+    "report_field","color","show_percentage_stats","stats_time_interval","currency"];
+
+  function cardValue(card){
+    return frp('frappe.desk.doctype.number_card.number_card.get_result',
+               {doc:JSON.stringify(card),filters:card.filters_json||'[]'})
+      .then(function(v){return {card:card,value:v};})
+      .catch(function(e){return {card:card,error:String(e&&e.message||e)};});
+  }
+  function chartData(chart){
+    // Custom-source charts are served by their source method, not by the generic reader
+    var p=(chart.chart_type==='Custom'&&chart.source)
+      ? frp(FUNNEL_SOURCE,{})
+      : frp('frappe.desk.doctype.dashboard_chart.dashboard_chart.get',{chart_name:chart.name,refresh:1});
+    return p.then(function(d){return {chart:chart,data:d};})
+            .catch(function(e){return {chart:chart,error:String(e&&e.message||e)};});
+  }
+
+  function insights(){
+    return Promise.all([
+      glist('Number Card',{filters:{module:MODULE},fields:CARD_FIELDS,order_by:'name asc'}),
+      glist('Dashboard Chart',{filters:{module:MODULE},fields:['name','chart_name','chart_type','type','source','document_type'],order_by:'name asc'})
+    ]).then(function(R){
+      var cards=R[0],charts=R[1];
+      setBadge('bd-ch',fmt(charts.length));
+      return Promise.all([Promise.all(cards.map(cardValue)),Promise.all(charts.map(chartData))]);
+    }).then(function(R){
+      var cardRes=R[0],chartRes=R[1];
+      var money=/sales|revenue|cost|value/i;
+
+      var tiles=cardRes.map(function(r){
+        if(r.error)return kpi(esc(r.card.label),'—','<span style="color:var(--bad)">unavailable</span>','warn',null);
+        var v=Number(r.value)||0;
+        return kpi(esc(r.card.label),money.test(r.card.label)?kesM(v):fmt(v),
+                   esc(r.card.document_type||'')+' · '+esc(r.card.function||''),'sum',null);
+      }).join('');
+
+      var blocks='',draw=[];
+      chartRes.forEach(function(r,i){
+        var id='pr-dbc-'+i, c=r.chart;
+        var sub=(c.chart_type==='Custom'?'custom source':(c.chart_type+(c.document_type?' · '+c.document_type:'')));
+        if(r.error){
+          blocks+='<div class="aph-card"><div class="aph-card-hd"><div class="ttl">'+esc(c.name)+'</div><div class="sub">'+esc(sub)+'</div></div><div class="aph-empty">could not load: '+esc(r.error.substring(0,120))+'</div></div>';
+          return;
+        }
+        var labels=(r.data&&r.data.labels)||[];
+        var ds=((r.data&&r.data.datasets)||[])[0]||{values:[]};
+        var isRound=/Donut|Pie/i.test(c.type||'');
+        if(isRound){
+          // no donut renderer here — a ranked bar list reads better anyway
+          var rows=labels.map(function(l,j){return {lbl:String(l),val:Number(ds.values[j])||0};});
+          blocks+='<div class="aph-card"><div class="aph-card-hd"><div class="ttl">'+esc(c.name)+'</div><div class="sub">'+esc(sub)+'</div></div><div class="aph-card-body">'+bars(rows,'lbl','val')+'</div></div>';
+        }else{
+          blocks+=chartCard(esc(c.name),esc(sub),id,300);
+          draw.push({id:id,labels:labels,values:ds.values||[],type:c.type});
+        }
+      });
+
+      var html=hd('Dashboard','The eight number cards and '+chartRes.length+' charts shipped with the module, read live from this site'+filterNote())+
+        '<div class="aph-kpis">'+tiles+'</div>'+
+        '<div style="margin-bottom:18px">'+extLink('/app/propagation','Propagation workspace')+' &nbsp; '+extLink('/app/dashboard-view/Propagation','Desk dashboard')+'</div>'+
+        '<div class="aph-grid">'+blocks+'</div>';
+      document.getElementById('aph-content').innerHTML=html;
+      draw.forEach(function(d){
+        if(/Line/i.test(d.type))lineChart(d.id,d.labels,d.values,'#16a34a');
+        else barChart(d.id,d.labels,d.values,'#2563eb');
+      });
     });
   }
 
