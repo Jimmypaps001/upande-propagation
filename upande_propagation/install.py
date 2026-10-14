@@ -13,6 +13,7 @@ from these hooks, not from a patch, or it silently never happens.
 import frappe
 
 from upande_propagation.patches.v1_0 import (
+	add_propagation_unit_fields,
 	create_propagation_dashboard_page,
 	seed_propagation_settings,
 )
@@ -29,6 +30,7 @@ def after_migrate():
 def setup():
 	"""Idempotent: seeds only what is missing, refreshes what is shipped."""
 	seed_propagation_settings.execute()
+	add_propagation_unit_fields.execute()
 	create_propagation_dashboard_page.execute()
 	sync_dashboard()
 
