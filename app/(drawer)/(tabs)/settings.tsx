@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { Screen } from '@/src/components/Screen';
 import { Button } from '@/src/components/Button';
 import { Card } from '@/src/components/Card';
@@ -9,12 +9,13 @@ import { colors, fontFamily, fontSize, spacing } from '@/src/theme';
 
 export default function Settings() {
   const router = useRouter();
+  const drawer = useNavigation<{ openDrawer: () => void }>('/(drawer)');
   const { email, fullName, baseUrl, logout } = useAuthStore();
   const unit = useUnitStore((s) => s.unit);
   const setUnit = useUnitStore((s) => s.setUnit);
 
   return (
-    <Screen title="Settings" leftIcon="arrow-back" onPressLeft={() => router.back()}>
+    <Screen title="Settings" leftIcon="menu" onPressLeft={() => drawer.openDrawer()}>
       <Card title="Signed in">
         <Row label="Name" value={fullName ?? '—'} />
         <Row label="Email" value={email ?? '—'} />

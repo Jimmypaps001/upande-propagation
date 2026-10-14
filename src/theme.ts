@@ -5,11 +5,18 @@
  * is that one minus the coffee-specific accent tokens (cherry, parchment,
  * roast), which are only meaningful for coffee charts and illustrations.
  *
- * Don't introduce per-feature accent colors. Distinguish sections by icons
- * and layout, not color. Status hues (success / warning / error) stay shared.
+ * Chrome stays monochrome: headers, tab bars, buttons and the drawer are black
+ * on white, the same as Upande Harvest and Upande Coffee, so the three apps on
+ * one phone read as one family.
+ *
+ * What a crop app may add is its own accent set, as Coffee adds cherry /
+ * parchment / roast. They colour DATA -- a stage, a severity, a section's icon
+ * -- and never chrome. The rule that was here before ("no per-feature accents")
+ * was stricter than Coffee's own theme and left nothing to tell a callusing
+ * batch from one ready to leave.
  */
 
-export const colors = {
+const colorsRaw = {
   // Surfaces
   background: '#FAFAFA',
   surface: '#FFFFFF',
@@ -34,7 +41,47 @@ export const colors = {
   // Chrome
   border: '#E5E5E5',
   overlay: 'rgba(0, 0, 0, 0.4)',
+
+  // Propagation-flavoured accents, the counterpart to Coffee's cherry /
+  // parchment / roast. Used for stages, findings and section icons; never for
+  // chrome. Each has a soft tint for the background behind its own colour.
+  leaf: '#2F7A3E',
+  leafSoft: '#E8F3EA',
+  root: '#8A5A2B',
+  rootSoft: '#F5ECE1',
+  mist: '#2E6E8E',
+  mistSoft: '#E7F0F6',
+  bloom: '#A33A6B',
+  bloomSoft: '#F9E9F1',
 } as const;
+
+/**
+ * The propagation ladder, in order, each with the accent that stands for it.
+ *
+ * Cutting and sticking are handwork on a bench (root brown); callusing and
+ * rooting happen under mist (mist blue); nursery and hardening are growing on
+ * (leaf green); ready and completed are the end of it (bloom).
+ *
+ * Keyed by the Propagation Batch `current_stage` Select, so a stage the server
+ * adds and this does not know falls back to neutral rather than breaking.
+ */
+export const colors = colorsRaw;
+
+export const stageAccent: Record<string, { fg: string; bg: string }> = {
+  Cutting: { fg: colorsRaw.root, bg: colorsRaw.rootSoft },
+  Sticking: { fg: colorsRaw.root, bg: colorsRaw.rootSoft },
+  Callusing: { fg: colorsRaw.mist, bg: colorsRaw.mistSoft },
+  Rooting: { fg: colorsRaw.mist, bg: colorsRaw.mistSoft },
+  Nursery: { fg: colorsRaw.leaf, bg: colorsRaw.leafSoft },
+  Hardening: { fg: colorsRaw.leaf, bg: colorsRaw.leafSoft },
+  'Ready for Dispatch': { fg: colorsRaw.bloom, bg: colorsRaw.bloomSoft },
+  Completed: { fg: colorsRaw.textMuted, bg: colorsRaw.surfaceAlt },
+};
+
+/** Neutral for anything the ladder does not name. */
+export function accentFor(stage: string | null | undefined): { fg: string; bg: string } {
+  return (stage && stageAccent[stage]) || { fg: colorsRaw.textSecondary, bg: colorsRaw.surfaceAlt };
+}
 
 export const fontFamily = {
   regular: 'DMSans_400Regular',

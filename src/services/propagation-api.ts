@@ -77,17 +77,9 @@ export interface PlanDetail {
 
 /** Propagation plans this user can record against, newest season first. */
 export async function listPlans(): Promise<PlanSummary[]> {
-  const route = endpoint('frappe.client.get_list');
   const res = await api<{ message?: PlanSummary[] }>({
     method: 'GET',
-    url: route.path,
-    params: {
-      doctype: 'Summer Flower Propagation Plan',
-      fields: JSON.stringify(['name', 'variety', 'farm', 'season', 'status']),
-      filters: JSON.stringify([['status', '!=', 'Rejected']]),
-      order_by: 'season_start_year desc, modified desc',
-      limit_page_length: 0,
-    },
+    url: endpoint('propagation_plans').path,
   });
   return res.message ?? [];
 }
@@ -144,16 +136,9 @@ export async function recordActual(input: RecordInput): Promise<{ name: string; 
 
 /** Propagation units, for the one-time setup screen. */
 export async function listUnits(): Promise<string[]> {
-  const route = endpoint('frappe.client.get_list');
-  const res = await api<{ message?: { name: string }[] }>({
+  const res = await api<{ message?: string[] }>({
     method: 'GET',
-    url: route.path,
-    params: {
-      doctype: 'Warehouse',
-      fields: JSON.stringify(['name']),
-      filters: JSON.stringify([['custom_sf_is_propagation_unit', '=', 1], ['disabled', '=', 0]]),
-      limit_page_length: 0,
-    },
+    url: endpoint('propagation_units').path,
   });
-  return (res.message ?? []).map((r) => r.name);
+  return res.message ?? [];
 }
