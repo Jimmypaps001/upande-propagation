@@ -30,7 +30,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
-      "versionCode": 1
+      "versionCode": 100
     },
     "plugins": [
       "./plugins/withBuildTuning",
