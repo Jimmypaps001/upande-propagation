@@ -2,7 +2,7 @@
   "expo": {
     "name": "Upande Propagation",
     "slug": "upande-propagation",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "upandepropagation",
@@ -30,7 +30,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
-      "versionCode": 100
+      "versionCode": 101
     },
     "plugins": [
       "./plugins/withBuildTuning",
