@@ -14,6 +14,9 @@ from upande_propagation.upande_propagation.doctype.propagation_batch.propagation
 )
 
 
+SCOUTING = "Disease / Scouting"
+
+
 class DailyPropagationLog(Document):
 	def validate(self):
 		self.validate_batch()
@@ -74,6 +77,16 @@ class DailyPropagationLog(Document):
 			frappe.throw(_("Qty Done Today cannot be negative."))
 		if cint(self.mortality_today) < 0:
 			frappe.throw(_("Mortality Today cannot be negative."))
+		if cint(self.affected_qty) < 0:
+			frappe.throw(_("Plants Affected cannot be negative."))
+		# A scouting round is a log with nothing done and nothing dead: what it
+		# records is what was SEEN. Requiring a count here forced the finding to
+		# be typed as mortality, which both overstated the loss and lost the
+		# disease behind it.
+		if self.activity_type == SCOUTING:
+			if not cint(self.affected_qty) and not (self.observations or "").strip():
+				frappe.throw(_("Say how many plants are affected, or what you saw."))
+			return
 		if not cint(self.qty_done_today) and not cint(self.mortality_today):
 			frappe.throw(_("Record either work done or mortality — a log of zeroes says nothing."))
 

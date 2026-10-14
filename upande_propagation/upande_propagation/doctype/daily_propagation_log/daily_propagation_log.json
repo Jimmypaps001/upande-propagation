@@ -24,6 +24,12 @@
   "column_break_c1",
   "mortality_today",
   "surviving_qty",
+  "disease_section",
+  "disease",
+  "severity",
+  "column_break_dis",
+  "affected_qty",
+  "treatment_applied",
   "details_section",
   "greenhouse",
   "weather_conditions",
@@ -96,7 +102,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Activity Type",
-   "options": "Cutting\nSticking\nGermination Count\nNursery Count\nHardening Count\nDispatch Count\nMortality Count",
+   "options": "Cutting\nSticking\nGermination Count\nNursery Count\nHardening Count\nDispatch Count\nMortality Count\nDisease / Scouting",
    "reqd": 1
   },
   {
@@ -184,6 +190,44 @@
    "fieldname": "photo",
    "fieldtype": "Attach Image",
    "label": "Photo"
+  },
+  {
+   "depends_on": "eval:doc.activity_type=='Disease / Scouting'",
+   "fieldname": "disease_section",
+   "fieldtype": "Section Break",
+   "label": "Disease / scouting"
+  },
+  {
+   "depends_on": "eval:doc.activity_type=='Disease / Scouting'",
+   "fieldname": "disease",
+   "fieldtype": "Link",
+   "label": "Disease",
+   "mandatory_depends_on": "eval:doc.activity_type=='Disease / Scouting'",
+   "options": "Disease"
+  },
+  {
+   "depends_on": "eval:doc.activity_type=='Disease / Scouting'",
+   "fieldname": "severity",
+   "fieldtype": "Select",
+   "label": "Severity",
+   "options": "\nLow\nMedium\nHigh"
+  },
+  {
+   "fieldname": "column_break_dis",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.activity_type=='Disease / Scouting'",
+   "description": "Showing symptoms. Not a mortality -- record deaths as mortality.",
+   "fieldname": "affected_qty",
+   "fieldtype": "Int",
+   "label": "Plants affected"
+  },
+  {
+   "depends_on": "eval:doc.activity_type=='Disease / Scouting'",
+   "fieldname": "treatment_applied",
+   "fieldtype": "Small Text",
+   "label": "Treatment applied"
   }
  ],
  "grid_page_length": 50,
