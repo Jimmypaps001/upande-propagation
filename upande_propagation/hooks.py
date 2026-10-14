@@ -96,6 +96,10 @@ website_route_rules = [
 # before_install = "upande_propagation.install.before_install"
 # `bench install-app` marks patches as completed without running them, so the
 # site setup those patches do has to be driven from here as well.
+# The label print format renders its QR inline, so the method has to be
+# reachable from Jinja.
+jinja = {"methods": ["upande_propagation.qr.qr_data_uri"]}
+
 after_install = "upande_propagation.install.after_install"
 after_migrate = "upande_propagation.install.after_migrate"
 

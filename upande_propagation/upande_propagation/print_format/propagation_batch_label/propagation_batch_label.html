@@ -1,0 +1,54 @@
+{%- set payload = doc.name -%}
+{#
+    The label carries the batch name and nothing that can go stale. A tray sits
+    on a bench for three months and moves more than once, so a stage or a count
+    printed here would be wrong long before the label wore out. Scanning it
+    fetches the live batch.
+
+    Laid out in tables on purpose: these print through wkhtmltopdf, which does
+    not do flexbox, and a label that collapses on paper is worse than a plain one.
+-#}
+<div style="width: 72mm; padding: 3mm; font-family: Helvetica, Arial, sans-serif;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="width: 26mm; vertical-align: top; padding: 0;">
+        <img src="{{ qr_data_uri(payload, 4, 1) }}"
+             style="width: 24mm; height: 24mm; display: block; image-rendering: pixelated;" />
+      </td>
+      <td style="vertical-align: top; padding: 0 0 0 3mm;">
+        <div style="font-size: 12pt; font-weight: bold; line-height: 1.15;">
+          {{ doc.variety_name or doc.variety or "" }}
+        </div>
+        <div style="font-size: 9pt; font-family: monospace; margin-top: 1mm;">
+          {{ doc.name }}
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 2mm; font-size: 7.5pt;">
+          <tr>
+            <td style="padding: 0.4mm 0; color: #666;">{{ _("Stuck") }}</td>
+            <td style="padding: 0.4mm 0; text-align: right;">
+              {{ frappe.format(doc.start_date, {"fieldtype": "Date"}) if doc.start_date else "&mdash;" }}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0.4mm 0; color: #666;">{{ _("Week") }}</td>
+            <td style="padding: 0.4mm 0; text-align: right;">
+              {{ doc.iso_year or "" }}-W{{ "%02d"|format(doc.iso_week or 0) }}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0.4mm 0; color: #666;">{{ _("Planned") }}</td>
+            <td style="padding: 0.4mm 0; text-align: right;">
+              {{ doc.total_cuttings_planned or 0 }}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <div style="margin-top: 2mm; padding-top: 1.5mm; border-top: 0.3mm solid #ccc;
+              font-size: 7.5pt; color: #444;">
+    {{ doc.propagation_unit or _("unit not set") }}
+    {%- if doc.propagation_method %} &middot; {{ doc.propagation_method }}{% endif -%}
+  </div>
+</div>
