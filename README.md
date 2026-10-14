@@ -6,6 +6,11 @@ invoice.
 Mother Block → Budwood Harvest → Seedling Request → Propagation Batch (stages +
 daily logs) → Seedling Dispatch → planted into a Crop Cycle, or sold and invoiced.
 
+> **This repository holds two unrelated projects.** `james` is this app — Python
+> for Frappe, and the branch to install from. The [`mobile`](../../tree/mobile)
+> branch is a separate React Native / Expo app for the propagation unit's phone,
+> which shares no history with this one. Don't merge them.
+
 ### What it covers
 
 - **Mother stock** — mother blocks with cuttings taken and last cutting date
