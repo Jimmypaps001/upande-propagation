@@ -55,6 +55,23 @@ src/
   components/        Screen, Card, Button, LabeledInput, Pill, Toast
 ```
 
+## Building and releasing
+
+CI is ported from Post Harvest. A PR into `mobile` lints, typechecks, runs the
+versioning rules and assembles a debug APK; merging advances the version one
+odometer step and publishes a signed APK as a GitHub Release. See
+[docs/RELEASING.md](docs/RELEASING.md), and `scripts/setup-signing.sh` for the
+keystore.
+
+`eas.json` is here for parity, but nothing reads it: the runner does what
+`eas build` would do with `expo prebuild` plus Gradle, so there is no Expo
+account and no EAS credits in the loop.
+
+Post Harvest ships a patch release over the air and builds an APK only when the
+runtime opens. This app carries no expo-updates, so **every release is an APK** —
+`releaseKindFor()` in `scripts/version.mjs` is the one line to change if that
+stops being true.
+
 ## What it deliberately does not do
 
 No barcode scanning, no offline outbox, no OTA channel. Post Harvest needs all

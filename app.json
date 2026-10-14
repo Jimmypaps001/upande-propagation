@@ -7,11 +7,18 @@
     "icon": "./assets/images/icon.png",
     "scheme": "upandepropagation",
     "userInterfaceStyle": "light",
-    "platforms": ["android", "ios"],
+    "platforms": [
+      "android",
+      "ios"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.upande.propagation",
-      "infoPlist": { "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true } }
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "package": "com.upande.propagation",
@@ -26,6 +33,8 @@
       "versionCode": 1
     },
     "plugins": [
+      "./plugins/withBuildTuning",
+      "./plugins/withReleaseSigning",
       "expo-router",
       [
         "expo-splash-screen",
@@ -39,18 +48,28 @@
       "expo-secure-store",
       [
         "expo-build-properties",
-        { "android": { "usesCleartextTraffic": true } }
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
       ],
       "expo-asset",
       "expo-font",
       "expo-status-bar"
     ],
-    "experiments": { "typedRoutes": true, "reactCompiler": true },
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
     "runtimeVersion": "0.1",
     "androidStatusBar": {
       "barStyle": "dark-content",
       "backgroundColor": "#FFFFFF",
       "translucent": true
+    },
+    "extra": {
+      "githubRepo": "Jimmypaps001/upande-propagation"
     }
   }
 }
