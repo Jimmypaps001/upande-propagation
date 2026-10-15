@@ -20,6 +20,8 @@
   "section_break_source",
   "mother_block",
   "seedling_request",
+  "plant_consignment",
+  "consignment_code",
   "column_break_source",
   "bom",
   "material_request",
@@ -155,6 +157,20 @@
    "fieldtype": "Link",
    "label": "Seedling Request",
    "options": "Seedling Request"
+  },
+  {
+   "fieldname": "plant_consignment",
+   "fieldtype": "Link",
+   "label": "Plant Consignment",
+   "options": "Plant Consignment",
+   "description": "The delivery these plants came in on. The batch takes its number from it so the farm can trace a failure back to a lorry."
+  },
+  {
+   "fieldname": "consignment_code",
+   "fieldtype": "Data",
+   "label": "Consignment",
+   "read_only": 1,
+   "fetch_from": "plant_consignment.consignment"
   },
   {
    "fieldname": "column_break_source",
@@ -348,7 +364,8 @@
    "fieldname": "propagation_unit",
    "fieldtype": "Link",
    "label": "Propagation Unit",
-   "options": "Warehouse"
+   "options": "Warehouse",
+   "allow_on_submit": 1
   },
   {
    "fieldname": "section_break_costing",

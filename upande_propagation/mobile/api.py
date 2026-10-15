@@ -24,6 +24,11 @@ from frappe import _
 from frappe.utils import add_days, cint, flt, getdate, today
 
 from upande_propagation import api as _api
+from upande_propagation import operations as _ops
+from upande_propagation import protocol_rules as _rules
+from upande_propagation.upande_propagation.doctype.plant_consignment import (
+	plant_consignment as _consignment,
+)
 
 # The order a batch moves through. Taken from the doctype, not re-typed: the
 # Select is the one true list and a copy here would drift from it.
@@ -350,3 +355,156 @@ def add_log(propagation_batch, activity_type, log_date=None, qty_done_today=0,
 	return {"name": doc.name, "log_date": str(doc.log_date),
 			"activity_type": doc.activity_type,
 			"batch": doc.propagation_batch}
+
+
+# --------------------------------------------------------------- the protocol
+@frappe.whitelist()
+def batch_activities(batch, on_date=None):
+	"""Which activities this batch may be recording today, and why not the rest."""
+	_guard()
+	return _rules.batch_activities(batch, on_date=on_date)
+
+
+@frappe.whitelist()
+def stage_plan(batch):
+	"""The stage ladder, with the nursery's days and the protocol's weeks."""
+	_guard()
+	return _rules.stage_plan(batch)
+
+
+# ----------------------------------------------------------------- the pickers
+@frappe.whitelist()
+def varieties(search=None, limit=50):
+	"""Plant items a consignment can be of."""
+	_guard()
+	return _ops.varieties(search=search, limit=limit)
+
+
+@frappe.whitelist()
+def suppliers(search=None, limit=50):
+	"""Suppliers, the ones this unit has bought from first."""
+	_guard()
+	return _ops.suppliers(search=search, limit=limit)
+
+
+@frappe.whitelist()
+def warehouses(search=None, units_only=0, limit=50):
+	"""Where plants can be received, or benched."""
+	_guard()
+	return _ops.warehouses(search=search, units_only=units_only, limit=limit)
+
+
+@frappe.whitelist()
+def next_consignment_code(arrival_date=None):
+	"""The number the next arrival on this date would get, before it is saved."""
+	_guard()
+	return _ops.next_consignment_code(arrival_date=arrival_date)
+
+
+# -------------------------------------------------------------------- arrivals
+@frappe.whitelist()
+def consignments(status=None, variety=None, supplier=None, from_date=None,
+                 to_date=None, limit=60):
+	"""The arrivals history, newest first."""
+	_guard()
+	return _ops.consignments(status=status, variety=variety, supplier=supplier,
+	                         from_date=from_date, to_date=to_date, limit=limit)
+
+
+@frappe.whitelist()
+def consignment_detail(consignment):
+	"""One arrival: what came, how it checked out, what was raised off it."""
+	_guard()
+	return _ops.consignment_detail(consignment)
+
+
+@frappe.whitelist()
+def new_consignment(supplier, variety, qty_received, arrival_date=None,
+                    form="Tissue Culture", warehouse=None,
+                    rejected_warehouse=None, rate=0,
+                    supplier_delivery_note=None, uom=None,
+                    propagation_plan=None, notes=None, company=None, submit=1):
+	"""Record an arrival. It gets its consignment number here."""
+	_guard()
+	return _ops.new_consignment(
+		supplier=supplier, variety=variety, qty_received=qty_received,
+		arrival_date=arrival_date, form=form, warehouse=warehouse,
+		rejected_warehouse=rejected_warehouse, rate=rate,
+		supplier_delivery_note=supplier_delivery_note, uom=uom,
+		propagation_plan=propagation_plan, notes=notes, company=company,
+		submit=submit)
+
+
+@frappe.whitelist()
+def check_consignment(consignment, accepted, rejected=0, readings=None,
+                      reason=None, rejected_warehouse=None,
+                      supplier_delivery_note=None):
+	"""The quality check, and the stock receipt that follows a pass."""
+	_guard()
+	return _consignment.accept(
+		consignment=consignment, accepted=accepted, rejected=rejected,
+		readings=readings, reason=reason, rejected_warehouse=rejected_warehouse,
+		supplier_delivery_note=supplier_delivery_note)
+
+
+# --------------------------------------------------------------------- the work
+@frappe.whitelist()
+def create_batch(plant_consignment, qty=None, propagation_unit=None,
+                 propagation_method="Own-root Cutting", start_date=None,
+                 seedling_request=None, notes=None, submit=1):
+	"""Take a received consignment onto the bench."""
+	_guard()
+	return _ops.create_batch(
+		plant_consignment=plant_consignment, qty=qty,
+		propagation_unit=propagation_unit, propagation_method=propagation_method,
+		start_date=start_date, seedling_request=seedling_request, notes=notes,
+		submit=submit)
+
+
+@frappe.whitelist()
+def move_batches(batches, stage=None, on_date=None, propagation_unit=None,
+                 notes=None):
+	"""Move one batch or a whole bench to the next stage, or into a trough."""
+	_guard()
+	return _ops.move_batches(batches=batches, stage=stage, on_date=on_date,
+	                         propagation_unit=propagation_unit, notes=notes)
+
+
+@frappe.whitelist()
+def record_mortality(batches, qty, log_date=None, observations=None):
+	"""Losses, across one batch or several."""
+	_guard()
+	return _ops.record_mortality(batches=batches, qty=qty, log_date=log_date,
+	                             observations=observations)
+
+
+# --------------------------------------------------------------------- dispatch
+@frappe.whitelist()
+def dispatch_targets(farm=None):
+	"""The farms, greenhouses and open requests a dispatch can go to."""
+	_guard()
+	return _ops.dispatch_targets(farm=farm)
+
+
+@frappe.whitelist()
+def dispatch_batch(propagation_batch, qty_dispatched, target_greenhouse=None,
+                   farm=None, dispatch_date=None, grade=None,
+                   seedling_request=None, source_warehouse=None, notes=None,
+                   submit=1):
+	"""Send seedlings to the farm, moving the stock with them."""
+	_guard()
+	return _ops.dispatch_batch(
+		propagation_batch=propagation_batch, qty_dispatched=qty_dispatched,
+		target_greenhouse=target_greenhouse, farm=farm,
+		dispatch_date=dispatch_date, grade=grade,
+		seedling_request=seedling_request, source_warehouse=source_warehouse,
+		notes=notes, submit=submit)
+
+
+# ---------------------------------------------------------------------- reports
+@frappe.whitelist()
+def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None):
+	"""Consignments in, plants standing, seedlings out."""
+	_guard()
+	return _ops.reports(from_date=from_date, to_date=to_date, variety=variety,
+	                    farm=farm, unit=unit)

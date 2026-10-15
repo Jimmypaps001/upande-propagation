@@ -20,6 +20,7 @@ SCOUTING = "Disease / Scouting"
 class DailyPropagationLog(Document):
 	def validate(self):
 		self.validate_batch()
+		self.validate_activity()
 		self.validate_counts()
 		self.set_batch_details()
 
@@ -71,6 +72,20 @@ class DailyPropagationLog(Document):
 			)
 		if getdate(self.log_date) > getdate(today()):
 			frappe.throw(_("Log Date cannot be in the future."))
+
+	def validate_activity(self):
+		"""Only on a new log, and only on the activity actually chosen.
+
+		Re-judging an existing log would make a protocol change retroactively
+		invalidate work that was correctly recorded at the time, and the farm
+		would be unable to so much as fix a typo on it.
+		"""
+		if not self.is_new():
+			return
+		from upande_propagation import protocol_rules
+
+		protocol_rules.enforce(self.propagation_batch, self.activity_type,
+		                       log_date=self.log_date)
 
 	def validate_counts(self):
 		if cint(self.qty_done_today) < 0:

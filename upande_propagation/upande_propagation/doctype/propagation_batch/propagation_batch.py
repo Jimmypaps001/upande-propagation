@@ -51,12 +51,22 @@ class PropagationBatch(Document):
 		# `format:...-{####}` drew its counter from the site-wide empty-prefix
 		# Series row, so batch numbers were neither per-week nor sequential.
 		self.set_iso_week_year()
+		if self.plant_consignment:
+			# The arrival's number is the thread that runs gate -> bench -> farm,
+			# so a batch raised from a consignment carries it rather than opening
+			# a second numbering nobody can tie back.
+			code = self.consignment_code or frappe.db.get_value(
+				"Plant Consignment", self.plant_consignment, "consignment")
+			if code:
+				self.name = make_autoname(f"PB-{code}-.###")
+				return
 		week = cint(self.iso_week) or getdate(today()).isocalendar()[1]
 		year = cint(self.iso_year) or getdate(today()).isocalendar()[0]
 		self.name = make_autoname(f"PB-{year}-W{week:02d}-.####")
 
 	def validate(self):
 		self.set_iso_week_year()
+		self.set_from_consignment()
 		self.set_variety_name()
 		self.set_batch_title()
 		self.validate_sources()
@@ -78,6 +88,7 @@ class PropagationBatch(Document):
 	def on_submit(self):
 		if self.seedling_request:
 			update_request(self.seedling_request)
+		self.refresh_consignment()
 
 	def before_cancel(self):
 		# Guards belong before the docstatus is written, not after.
@@ -91,6 +102,10 @@ class PropagationBatch(Document):
 	def on_cancel(self):
 		if self.seedling_request:
 			update_request(self.seedling_request)
+		self.refresh_consignment()
+
+	def on_trash(self):
+		self.refresh_consignment()
 
 	# ------------------------------------------------------------------ helpers
 
@@ -100,6 +115,62 @@ class PropagationBatch(Document):
 		iso_year, iso_week, _weekday = getdate(self.start_date).isocalendar()
 		self.iso_year = iso_year
 		self.iso_week = iso_week
+
+	def set_from_consignment(self):
+		"""Take the variety, the unit and the quantity ceiling from the arrival.
+
+		A batch raised off a consignment cannot claim a different variety or more
+		plants than the delivery had left, because the consignment is what the
+		stock ledger actually received and the batch is only a way of working it.
+		"""
+		if not self.plant_consignment:
+			return
+		c = frappe.db.get_value(
+			"Plant Consignment", self.plant_consignment,
+			["consignment", "variety", "qty_accepted", "qty_received", "warehouse",
+			 "status", "docstatus", "company", "form"], as_dict=True)
+		if not c:
+			return
+		if cint(c.docstatus) != 1:
+			frappe.throw(_("Consignment {0} is not submitted.").format(
+				frappe.bold(self.plant_consignment)))
+		if c.status not in ("Received", "Awaiting Check"):
+			frappe.throw(_("Consignment {0} is {1}. Only a received delivery can "
+			               "be taken into a batch.").format(
+				frappe.bold(self.plant_consignment), frappe.bold(c.status)))
+
+		self.consignment_code = c.consignment
+		if self.variety and self.variety != c.variety:
+			frappe.throw(_("Consignment {0} delivered {1}, not {2}.").format(
+				frappe.bold(self.plant_consignment), frappe.bold(c.variety),
+				frappe.bold(self.variety)))
+		self.variety = c.variety
+		if not self.company:
+			self.company = c.company
+		if not self.propagation_unit:
+			self.propagation_unit = c.warehouse
+		if not cint(self.total_cuttings_received):
+			self.total_cuttings_received = cint(self.total_cuttings_planned)
+
+		available = cint(c.qty_accepted or c.qty_received)
+		others = sum(cint(r.total_cuttings_planned) for r in frappe.get_all(
+			"Propagation Batch",
+			filters={"plant_consignment": self.plant_consignment,
+			         "docstatus": ["<", 2], "name": ["!=", self.name or ""]},
+			fields=["total_cuttings_planned"]))
+		left = available - others
+		if cint(self.total_cuttings_planned) > left:
+			frappe.throw(_("Consignment {0} has {1} plant(s) left to batch, not {2}.")
+			             .format(frappe.bold(self.plant_consignment), left,
+			                     cint(self.total_cuttings_planned)))
+
+	def refresh_consignment(self):
+		if not self.plant_consignment:
+			return
+		from upande_propagation.upande_propagation.doctype.plant_consignment.plant_consignment import (
+			refresh_batched,
+		)
+		refresh_batched(self.plant_consignment)
 
 	def set_variety_name(self):
 		if self.variety and not self.variety_name:

@@ -28,8 +28,12 @@ class SeedlingDispatch(Document):
 
 	def on_submit(self):
 		self.update_sources()
+		self.move_stock()
 
 	def on_cancel(self):
+		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry",
+		                               "Repost Item Valuation")
+		self.cancel_stock()
 		self.update_sources()
 
 	# ------------------------------------------------------------------ helpers
@@ -50,15 +54,23 @@ class SeedlingDispatch(Document):
 		batch = frappe.db.get_value(
 			"Propagation Batch",
 			self.propagation_batch,
-			["variety", "seedling_request", "available_to_dispatch", "current_stage", "company"],
+			["variety", "seedling_request", "available_to_dispatch", "current_stage",
+			 "company", "propagation_unit", "consignment_code"],
 			as_dict=True,
 		)
 		self.variety = batch.variety
+		self.plant_consignment = batch.consignment_code
+		if not self.source_warehouse:
+			self.source_warehouse = batch.propagation_unit
 		self.available_to_dispatch = cint(batch.available_to_dispatch)
 		self.current_stage = batch.current_stage
 		if not self.seedling_request and self.purpose != "Sale":
 			self.seedling_request = batch.seedling_request
-		if not self.company:
+		# Derived, not defaulted. Company is mandatory, so Frappe fills it from
+		# the session before this runs, and on a multi-company site that default
+		# is somebody else's company -- which the stock transfer then refuses,
+		# correctly, because the batch's unit does not belong to it.
+		if batch.company:
 			self.company = batch.company
 		if not self.received_by:
 			self.received_by = frappe.session.user
@@ -132,6 +144,74 @@ class SeedlingDispatch(Document):
 			frappe.throw(
 				_("Set a Target Greenhouse or Target Crop Cycle so the seedlings can be traced to a bed.")
 			)
+
+	# ------------------------------------------------------------------- stock
+
+	def move_stock(self):
+		"""Hand the seedlings over on the ledger, not only on paper.
+
+		A dispatch to one of our own farms is a transfer between two warehouses
+		we own, so it is a Stock Entry and nothing more exotic. A sale leaves on
+		the invoice instead, and a dispatch with nowhere to transfer to -- no
+		unit, or a destination recorded only as a crop cycle -- stays a paper
+		record and says so rather than inventing a warehouse.
+		"""
+		if self.purpose == "Sale" or self.stock_entry:
+			return
+		entry_type = frappe.db.get_single_value(
+			"Propagation Settings", "dispatch_stock_entry_type")
+		if not entry_type:
+			return
+		if not self.source_warehouse or not self.target_greenhouse:
+			frappe.msgprint(
+				_("No stock was moved: {0} needs both a propagation unit to leave "
+				  "and a target greenhouse to arrive in.").format(self.name),
+				alert=True, indicator="orange")
+			return
+		if self.source_warehouse == self.target_greenhouse:
+			return
+
+		se = frappe.new_doc("Stock Entry")
+		se.stock_entry_type = entry_type
+		se.purpose = frappe.db.get_value(
+			"Stock Entry Type", entry_type, "purpose") or "Material Transfer"
+		se.company = self.company
+		se.posting_date = getdate(self.dispatch_date)
+		se.set_posting_time = 1
+		se.append("items", {
+			"item_code": self.variety,
+			"qty": cint(self.qty_dispatched),
+			"s_warehouse": self.source_warehouse,
+			"t_warehouse": self.target_greenhouse,
+		})
+		se.remarks = _("Seedling Dispatch {0}{1}").format(
+			self.name,
+			_(" -- consignment {0}").format(self.plant_consignment)
+			if self.plant_consignment else "")
+		se.flags.ignore_permissions = True
+		try:
+			se.insert()
+			se.submit()
+		except Exception:
+			# A transfer that cannot post must not silently swallow the dispatch,
+			# and must not take the dispatch down with it either: the seedlings
+			# have physically gone. The entry is left for someone to fix.
+			frappe.log_error(frappe.get_traceback(),
+			                 "Seedling Dispatch %s: stock entry" % self.name)
+			frappe.msgprint(
+				_("The seedlings were dispatched but the stock transfer did not "
+				  "post. Check the error log and move the stock by hand."),
+				alert=True, indicator="red")
+			return
+		self.db_set("stock_entry", se.name)
+
+	def cancel_stock(self):
+		if not self.stock_entry:
+			return
+		if cint(frappe.db.get_value("Stock Entry", self.stock_entry, "docstatus")) == 1:
+			se = frappe.get_doc("Stock Entry", self.stock_entry)
+			se.flags.ignore_permissions = True
+			se.cancel()
 
 	def update_sources(self):
 		# The batch rollup refreshes dispatched/available, then the request.

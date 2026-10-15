@@ -1,0 +1,95 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-15 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "specification",
+  "numeric",
+  "min_value",
+  "max_value",
+  "column_break_r1",
+  "reading_value",
+  "expected_value",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "specification",
+   "fieldtype": "Link",
+   "label": "Parameter",
+   "options": "Quality Inspection Parameter",
+   "reqd": 1,
+   "in_list_view": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "numeric",
+   "fieldtype": "Check",
+   "label": "Numeric",
+   "read_only": 1,
+   "default": "1",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "min_value",
+   "fieldtype": "Float",
+   "label": "Min",
+   "read_only": 1,
+   "depends_on": "numeric",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "max_value",
+   "fieldtype": "Float",
+   "label": "Max",
+   "read_only": 1,
+   "depends_on": "numeric",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "column_break_r1",
+   "fieldtype": "Column Break",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "reading_value",
+   "fieldtype": "Data",
+   "label": "Reading",
+   "in_list_view": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "expected_value",
+   "fieldtype": "Data",
+   "label": "Expected",
+   "read_only": 1,
+   "depends_on": "eval:!doc.numeric",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nAccepted\nRejected",
+   "in_list_view": 1,
+   "allow_on_submit": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-15 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Plant Consignment Reading",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "istable": 1
+}

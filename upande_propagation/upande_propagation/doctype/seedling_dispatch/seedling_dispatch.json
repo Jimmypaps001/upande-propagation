@@ -25,6 +25,9 @@
   "farm",
   "target_greenhouse",
   "target_crop_cycle",
+  "plant_consignment",
+  "source_warehouse",
+  "stock_entry",
   "section_break_sale",
   "customer",
   "selling_rate",
@@ -155,6 +158,29 @@
    "fieldtype": "Link",
    "label": "Target Crop Cycle",
    "options": "Crop Cycle"
+  },
+  {
+   "fieldname": "plant_consignment",
+   "fieldtype": "Data",
+   "label": "Consignment",
+   "read_only": 1,
+   "fetch_from": "propagation_batch.consignment_code",
+   "description": "Carried from the batch, which carried it from the arrival."
+  },
+  {
+   "fieldname": "source_warehouse",
+   "fieldtype": "Link",
+   "label": "From Warehouse",
+   "options": "Warehouse",
+   "description": "The propagation unit the seedlings leave. Defaults to the batch's unit."
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Link",
+   "label": "Stock Entry",
+   "options": "Stock Entry",
+   "read_only": 1,
+   "allow_on_submit": 1
   },
   {
    "depends_on": "eval:doc.purpose == 'Sale'",

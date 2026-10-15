@@ -127,12 +127,11 @@
    "label": "Counts"
   },
   {
-   "description": "Current count for this activity (e.g. cuttings made, germinated count, surviving count)",
+   "description": "Work done today. Leave at zero for a mortality count or a scouting round -- validate_counts already refuses a log that records neither work nor loss.",
    "fieldname": "qty_done_today",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Qty Done Today",
-   "reqd": 1
+   "label": "Qty Done Today"
   },
   {
    "description": "Auto-calculated running total",

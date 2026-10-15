@@ -11,7 +11,18 @@
   "stage_durations",
   "invoice_default_section",
   "invoice_default_html",
-  "sales_invoice_defaults"
+  "sales_invoice_defaults",
+  "arrivals_section",
+  "arrivals_html",
+  "default_receipt_warehouse",
+  "default_rejected_warehouse",
+  "column_break_arr",
+  "quality_inspection_template",
+  "dispatch_section",
+  "dispatch_html",
+  "dispatch_stock_entry_type",
+  "column_break_disp",
+  "seedling_item_group"
  ],
  "fields": [
   {
@@ -45,6 +56,65 @@
    "fieldtype": "Table",
    "label": "Sales Invoice Defaults",
    "options": "Propagation Invoice Default"
+  },
+  {
+   "fieldname": "arrivals_section",
+   "fieldtype": "Section Break",
+   "label": "Arrivals"
+  },
+  {
+   "fieldname": "arrivals_html",
+   "fieldtype": "HTML",
+   "options": "<p class=\"text-muted small\">Where a plant consignment lands when nobody picks a warehouse, and the sheet it is checked against. The variety's own Quality Inspection Template wins over the one named here.</p>"
+  },
+  {
+   "fieldname": "default_receipt_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Accepted Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "default_rejected_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Rejected Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "column_break_arr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quality_inspection_template",
+   "fieldtype": "Link",
+   "label": "Default Inspection Template",
+   "options": "Quality Inspection Template"
+  },
+  {
+   "fieldname": "dispatch_section",
+   "fieldtype": "Section Break",
+   "label": "Dispatch"
+  },
+  {
+   "fieldname": "dispatch_html",
+   "fieldtype": "HTML",
+   "options": "<p class=\"text-muted small\">A dispatch to one of our own farms moves stock between warehouses. Leave the entry type blank to keep the dispatch a paper record only.</p>"
+  },
+  {
+   "fieldname": "dispatch_stock_entry_type",
+   "fieldtype": "Link",
+   "label": "Stock Entry Type",
+   "options": "Stock Entry Type",
+   "default": "Material Transfer"
+  },
+  {
+   "fieldname": "column_break_disp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "seedling_item_group",
+   "fieldtype": "Data",
+   "label": "Seedling Item Group",
+   "default": "Summer Flowers"
   }
  ],
  "grid_page_length": 50,
