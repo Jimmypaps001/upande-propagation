@@ -82,6 +82,8 @@ export default function RootLayout() {
             <Stack.Screen name="(drawer)" />
             <Stack.Screen name="record/[event]" />
             <Stack.Screen name="batch/[name]" />
+            <Stack.Screen name="arrival/new" />
+            <Stack.Screen name="arrival/[name]" />
             <Stack.Screen name="plan/[name]" />
             <Stack.Screen name="setup" options={{ gestureEnabled: false }} />
             <Stack.Screen name="login" />

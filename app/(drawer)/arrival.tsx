@@ -1,65 +1,69 @@
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/src/components/Screen';
-import { Card } from '@/src/components/Card';
 import { Button } from '@/src/components/Button';
-import { LabeledInput } from '@/src/components/LabeledInput';
-import { useToast } from '@/src/components/Toast';
+import { lightHaptic } from '@/src/services/feedback';
 import {
-  draftPlantReceipt,
-  openPlantOrders,
-  type OpenOrder,
-  type ReceiptLineInput,
-} from '@/src/services/planning-api';
-import { colors, fontFamily, fontSize, spacing } from '@/src/theme';
-
-interface Entry {
-  accepted: string;
-  rejected: string;
-}
+  consignments,
+  type ConsignmentRow,
+  type ConsignmentStatus,
+} from '@/src/services/operations-api';
+import { userMessage } from '@/src/services/user-message';
+import { borderRadius, colors, fontFamily, fontSize, spacing } from '@/src/theme';
 
 /**
- * What arrived, against what was ordered.
+ * Arrivals: the history, and the way to add to it.
  *
- * The receipt is written as a DRAFT and left there. Submitting moves stock and
- * posts to the ledger; the unit has the figures but the office has the invoice,
- * so the two halves of that are deliberately kept apart.
+ * The history is what the screen opens on, not the form. Most of the time
+ * somebody comes here to find a delivery that already happened -- which lorry
+ * brought the plants that are failing in bed 14 -- and only occasionally to
+ * write a new one down. A form that opened first would make the common case the
+ * slow one.
+ *
+ * Tissue culture is not a separate page. It is one of six forms a consignment
+ * can arrive in, chosen on the same form, because a unit does not think of a TC
+ * flask and a box of roots as two different kinds of event: both are a lorry at
+ * the gate with a waybill.
  */
-export default function Arrival() {
-  const drawer = useNavigation<{ openDrawer: () => void }>('/(drawer)');
-  const toast = useToast();
+const FILTERS: { label: string; status?: ConsignmentStatus }[] = [
+  { label: 'All' },
+  { label: 'To check', status: 'Awaiting Check' },
+  { label: 'Held', status: 'Held' },
+  { label: 'Received', status: 'Received' },
+  { label: 'Turned away', status: 'Rejected' },
+];
 
-  const [orders, setOrders] = useState<OpenOrder[] | null>(null);
-  const [required, setRequired] = useState<string[]>([]);
+export default function Arrivals() {
+  const router = useRouter();
+  const drawer = useNavigation<{ openDrawer: () => void }>('/(drawer)');
+
+  const [rows, setRows] = useState<ConsignmentRow[] | null>(null);
+  const [status, setStatus] = useState<ConsignmentStatus | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  const [open, setOpen] = useState<string | null>(null);
-  const [entries, setEntries] = useState<Record<string, Entry>>({});
-  const [deliveryNote, setDeliveryNote] = useState('');
-  const [rejectedWarehouse, setRejectedWarehouse] = useState('');
 
   const load = useCallback(
-    () =>
+    (next?: ConsignmentStatus | undefined, replace = false) =>
       (async () => {
         try {
-          const res = await openPlantOrders();
+          const use = replace ? next : status;
           setError(null);
-          setOrders(res.orders);
-          setRequired(res.required_on_receipt ?? []);
+          if (replace) setStatus(next);
+          setRows(await consignments(use ? { status: use } : {}));
         } catch (e) {
-          setError(e instanceof Error ? e.message : 'Could not load the orders.');
+          setError(userMessage(e, 'Could not load the arrivals.'));
         }
       })(),
-    [],
+    [status],
   );
 
   useEffect(() => {
     load();
-  }, [load]);
+    // Once, on mount: the filter chips drive every later load themselves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -67,199 +71,192 @@ export default function Arrival() {
     setRefreshing(false);
   };
 
-  const order = orders?.find((o) => o.purchase_order === open) ?? null;
-
-  const lines: ReceiptLineInput[] = (order?.lines ?? [])
-    .map((l) => ({
-      po_item: l.po_item,
-      accepted: toNum(entries[l.po_item]?.accepted),
-      rejected: toNum(entries[l.po_item]?.rejected),
-    }))
-    .filter((l) => l.accepted + (l.rejected ?? 0) > 0);
-
-  const anyRejected = lines.some((l) => (l.rejected ?? 0) > 0);
-  const needsNote = required.includes('supplier_delivery_note');
-  const canSave =
-    lines.length > 0 &&
-    (!needsNote || !!deliveryNote.trim()) &&
-    (!anyRejected || !!rejectedWarehouse.trim()) &&
-    !busy;
-
-  const save = async () => {
-    if (!order || !canSave) return;
-    setBusy(true);
-    try {
-      const res = await draftPlantReceipt({
-        purchaseOrder: order.purchase_order,
-        lines,
-        supplierDeliveryNote: deliveryNote.trim() || null,
-        rejectedWarehouse: rejectedWarehouse.trim() || null,
-      });
-      toast.showSuccess(`Draft receipt ${res.name} created — the office submits it.`);
-      setOpen(null);
-      setEntries({});
-      setDeliveryNote('');
-      setRejectedWarehouse('');
-      await load();
-    } catch (e) {
-      toast.showError(e instanceof Error ? e.message : 'Could not write the receipt.');
-    } finally {
-      setBusy(false);
-    }
-  };
+  const waiting = (rows ?? []).filter(
+    (r) => r.status === 'Awaiting Check' || r.status === 'Held',
+  ).length;
 
   return (
     <Screen
       title="Arrivals"
       leftIcon="menu"
       onPressLeft={() => drawer.openDrawer()}
-      loading={orders === null && !error}
+      loading={rows === null && !error}
       error={error}
-      onRetry={load}
+      onRetry={() => load()}
       refreshing={refreshing}
       onRefresh={refresh}
     >
-      <Text style={s.intro}>
-        Orders with plant material still to come. Enter what turned up and the app writes a
-        draft Purchase Receipt; stock moves only when the office submits it.
-      </Text>
+      <Button
+        label="Record an arrival"
+        iconLeft="add-circle-outline"
+        onPress={() => {
+          lightHaptic();
+          router.push('/arrival/new');
+        }}
+        style={{ marginBottom: spacing.lg }}
+      />
 
-      {orders && orders.length === 0 ? (
+      {waiting > 0 && !status ? (
+        <TouchableOpacity
+          style={s.banner}
+          activeOpacity={0.7}
+          onPress={() => load('Awaiting Check', true)}
+        >
+          <Ionicons name="alert-circle-outline" size={18} color={colors.warning} />
+          <Text style={s.bannerText}>
+            {waiting} {waiting === 1 ? 'delivery has' : 'deliveries have'} not been checked. Nothing
+            of {waiting === 1 ? 'it' : 'them'} is on the ledger yet.
+          </Text>
+        </TouchableOpacity>
+      ) : null}
+
+      <View style={s.filters}>
+        {FILTERS.map((f) => (
+          <Chip
+            key={f.label}
+            label={f.label}
+            on={status === f.status}
+            onPress={() => load(f.status, true)}
+          />
+        ))}
+      </View>
+
+      {rows && rows.length === 0 ? (
         <Text style={s.none}>
-          Nothing outstanding. Every plant order on this server is either closed or already
-          received in full.
+          {status
+            ? `Nothing ${status === 'Rejected' ? 'turned away' : status.toLowerCase()}.`
+            : 'No arrival has been recorded yet. The first one will be numbered for today.'}
         </Text>
       ) : null}
 
-      {(orders ?? []).map((o) => {
-        const isOpen = o.purchase_order === open;
-        return (
-          <Card key={o.purchase_order}>
-            <TouchableOpacity
-              style={s.head}
-              activeOpacity={0.7}
-              onPress={() => setOpen(isOpen ? null : o.purchase_order)}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={s.supplier} numberOfLines={1}>
-                  {o.supplier_name ?? o.supplier}
-                </Text>
-                <Text style={s.po} numberOfLines={1}>
-                  {o.purchase_order} · {o.transaction_date ?? '—'}
-                </Text>
-              </View>
-              <Ionicons
-                name={isOpen ? 'chevron-up' : 'chevron-down'}
-                size={18}
-                color={colors.textMuted}
-              />
-            </TouchableOpacity>
+      {(rows ?? []).map((c) => (
+        <TouchableOpacity
+          key={c.name}
+          style={s.card}
+          activeOpacity={0.7}
+          onPress={() => router.push({ pathname: '/arrival/[name]', params: { name: c.name } })}
+        >
+          <View style={s.cardTop}>
+            <Text style={s.code}>{c.consignment}</Text>
+            <StatusBadge status={c.status} />
+          </View>
 
-            {o.lines.map((l) => (
-              <View key={l.po_item} style={s.line}>
-                <View style={s.lineHead}>
-                  <Text style={s.item} numberOfLines={1}>
-                    {l.item_name ?? l.item_code}
-                  </Text>
-                  <Text style={s.outstanding}>{num(l.outstanding)} to come</Text>
-                </View>
-                <Text style={s.lineSub}>
-                  {num(l.ordered)} ordered · {num(l.received)} received
-                  {l.schedule_date ? ` · due ${l.schedule_date}` : ''}
-                  {l.planting ? ` · ${l.planting}` : ''}
-                </Text>
+          <Text style={s.variety} numberOfLines={1}>
+            {c.variety_name ?? c.variety ?? '—'}
+          </Text>
+          <Text style={s.meta} numberOfLines={1}>
+            {c.form ?? '—'} · {c.supplier_name ?? c.supplier ?? 'no supplier'} ·{' '}
+            {c.arrival_date ?? '—'}
+          </Text>
 
-                {isOpen ? (
-                  <View style={s.inputs}>
-                    <View style={{ flex: 1 }}>
-                      <LabeledInput
-                        label="Accepted"
-                        value={entries[l.po_item]?.accepted ?? ''}
-                        onChangeText={(t) =>
-                          setEntries((e) => ({
-                            ...e,
-                            [l.po_item]: { accepted: t, rejected: e[l.po_item]?.rejected ?? '' },
-                          }))
-                        }
-                        keyboardType="numeric"
-                        placeholder="0"
-                      />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <LabeledInput
-                        label="Rejected"
-                        value={entries[l.po_item]?.rejected ?? ''}
-                        onChangeText={(t) =>
-                          setEntries((e) => ({
-                            ...e,
-                            [l.po_item]: { accepted: e[l.po_item]?.accepted ?? '', rejected: t },
-                          }))
-                        }
-                        keyboardType="numeric"
-                        placeholder="0"
-                      />
-                    </View>
-                  </View>
+          <View style={s.figures}>
+            <Figure label="Arrived" value={num(c.qty_received)} />
+            {c.status === 'Received' ? (
+              <>
+                <Figure label="Accepted" value={num(c.qty_accepted)} />
+                {c.qty_rejected ? (
+                  <Figure label="Turned away" value={num(c.qty_rejected)} tone={colors.error} />
                 ) : null}
-              </View>
-            ))}
-
-            {isOpen ? (
-              <View style={s.footer}>
-                <LabeledInput
-                  label={needsNote ? "Supplier's delivery note (required)" : "Supplier's delivery note"}
-                  value={deliveryNote}
-                  onChangeText={setDeliveryNote}
-                  placeholder="DN number on the paperwork"
+                <Figure
+                  label={c.qty_unbatched ? 'To bench' : 'Benched'}
+                  value={c.qty_unbatched ? num(c.qty_unbatched) : `${c.batches_created}`}
+                  tone={c.qty_unbatched ? colors.leaf : undefined}
                 />
-                {anyRejected ? (
-                  <LabeledInput
-                    label="Rejected warehouse (required)"
-                    value={rejectedWarehouse}
-                    onChangeText={setRejectedWarehouse}
-                    placeholder="Where the rejects go"
-                    helperText="Rejected stock cannot sit in the accepted warehouse."
-                  />
-                ) : null}
-
-                <Button
-                  label={busy ? 'Writing…' : 'Save as draft receipt'}
-                  onPress={save}
-                  disabled={!canSave}
-                  loading={busy}
-                  style={{ marginTop: spacing.md }}
-                />
-                <Text style={s.note}>
-                  A draft is created against {o.purchase_order}. Nothing moves until it is
-                  submitted.
-                </Text>
-              </View>
+              </>
             ) : null}
-          </Card>
-        );
-      })}
+          </View>
+        </TouchableOpacity>
+      ))}
     </Screen>
   );
 }
 
-const toNum = (s: string | undefined): number => {
-  const n = parseInt((s ?? '').replace(/[^0-9]/g, ''), 10);
-  return Number.isNaN(n) ? 0 : n;
+/**
+ * Held is the one that matters. It means the plants are physically here and the
+ * stock deliberately is not on the ledger, which is a different problem from a
+ * delivery nobody has looked at yet.
+ */
+function StatusBadge({ status }: { status: ConsignmentStatus }) {
+  const tone = TONE[status] ?? { fg: colors.textSecondary, bg: colors.surfaceAlt };
+  return (
+    <View style={[s.badge, { backgroundColor: tone.bg }]}>
+      <Text style={[s.badgeText, { color: tone.fg }]}>{status}</Text>
+    </View>
+  );
+}
+
+const TONE: Record<string, { fg: string; bg: string }> = {
+  'Awaiting Check': { fg: '#92400E', bg: '#FEF3C7' },
+  Held: { fg: '#991B1B', bg: '#FEE2E2' },
+  Received: { fg: '#166534', bg: '#DCFCE7' },
+  Rejected: { fg: '#991B1B', bg: '#FEE2E2' },
+  Draft: { fg: colors.textSecondary, bg: colors.surfaceAlt },
+  Cancelled: { fg: colors.textMuted, bg: colors.surfaceAlt },
 };
-const num = (n: number | undefined): string => (n ? Math.round(n).toLocaleString() : '0');
+
+function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={[s.chip, on ? s.chipOn : null]} onPress={onPress} activeOpacity={0.7}>
+      <Text style={[s.chipText, on ? s.chipTextOn : null]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function Figure({ label, value, tone }: { label: string; value: string; tone?: string }) {
+  return (
+    <View>
+      <Text style={[s.figValue, tone ? { color: tone } : null]}>{value}</Text>
+      <Text style={s.figLabel}>{label}</Text>
+    </View>
+  );
+}
+
+const num = (n: number | null | undefined): string => (n ? Math.round(n).toLocaleString() : '0');
 
 const s = StyleSheet.create({
-  intro: { fontFamily: fontFamily.regular, fontSize: fontSize.sm, color: colors.textSecondary, marginBottom: spacing.lg, lineHeight: 19 },
-  none: { fontFamily: fontFamily.regular, fontSize: fontSize.sm, color: colors.textSecondary, lineHeight: 19 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  supplier: { fontFamily: fontFamily.semiBold, fontSize: fontSize.md, color: colors.text },
-  po: { fontFamily: fontFamily.regular, fontSize: fontSize.xs, color: colors.textSecondary },
-  line: { marginTop: spacing.md, paddingTop: spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, gap: 2 },
-  lineHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-  item: { flex: 1, fontFamily: fontFamily.medium, fontSize: fontSize.sm, color: colors.text },
-  outstanding: { fontFamily: fontFamily.semiBold, fontSize: fontSize.sm, color: colors.text },
-  lineSub: { fontFamily: fontFamily.regular, fontSize: fontSize.xs, color: colors.textMuted },
-  inputs: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
-  footer: { marginTop: spacing.md, paddingTop: spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  note: { fontFamily: fontFamily.regular, fontSize: fontSize.xs, color: colors.textMuted, marginTop: spacing.sm, lineHeight: 16 },
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: '#FEF3C7',
+    marginBottom: spacing.lg,
+  },
+  bannerText: { flex: 1, fontFamily: fontFamily.medium, fontSize: fontSize.xs, color: '#92400E' },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.surfaceAlt,
+  },
+  chipOn: { backgroundColor: colors.primary },
+  chipText: { fontFamily: fontFamily.medium, fontSize: fontSize.xs, color: colors.textSecondary },
+  chipTextOn: { color: colors.textOnPrimary },
+  none: { fontFamily: fontFamily.regular, fontSize: fontSize.sm, color: colors.textSecondary },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    gap: 2,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  code: { fontFamily: fontFamily.bold, fontSize: fontSize.md, color: colors.text, letterSpacing: 0.4 },
+  badge: { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: borderRadius.full },
+  badgeText: { fontFamily: fontFamily.semiBold, fontSize: fontSize.xs },
+  variety: { fontFamily: fontFamily.semiBold, fontSize: fontSize.sm, color: colors.text },
+  meta: { fontFamily: fontFamily.regular, fontSize: fontSize.xs, color: colors.textMuted },
+  figures: { flexDirection: 'row', gap: spacing.xl, marginTop: spacing.md },
+  figValue: { fontFamily: fontFamily.semiBold, fontSize: fontSize.md, color: colors.text },
+  figLabel: { fontFamily: fontFamily.regular, fontSize: fontSize.xs, color: colors.textMuted },
 });

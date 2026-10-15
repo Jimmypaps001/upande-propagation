@@ -10,7 +10,12 @@
 import { api } from './api';
 import { BATCH_MODULE, endpoint } from './api-module';
 
-async function get<T>(method: string, params: Record<string, unknown> = {}): Promise<T> {
+/**
+ * Both helpers are exported because operations-api answers on the same server
+ * module. One place that knows how a call to upande_propagation is shaped beats
+ * two that agree today.
+ */
+export async function propGet<T>(method: string, params: Record<string, unknown> = {}): Promise<T> {
   const res = await api<{ message?: T }>({
     method: 'GET',
     url: endpoint(`${BATCH_MODULE}.${method}`).path,
@@ -20,7 +25,7 @@ async function get<T>(method: string, params: Record<string, unknown> = {}): Pro
   return res.message;
 }
 
-async function post<T>(method: string, data: Record<string, unknown> = {}): Promise<T> {
+export async function propPost<T>(method: string, data: Record<string, unknown> = {}): Promise<T> {
   const res = await api<{ message?: T }>({
     method: 'POST',
     url: endpoint(`${BATCH_MODULE}.${method}`).path,
@@ -29,6 +34,9 @@ async function post<T>(method: string, data: Record<string, unknown> = {}): Prom
   if (res.message === undefined) throw new Error('The server returned nothing.');
   return res.message;
 }
+
+const get = propGet;
+const post = propPost;
 
 export interface PropUnit {
   name: string;

@@ -13,6 +13,7 @@ import {
   type PlanDetail,
   type PlanSummary,
 } from '@/src/services/propagation-api';
+import { consignments } from '@/src/services/operations-api';
 import { useAuthStore } from '@/src/stores/authStore';
 import { useUnitStore } from '@/src/stores/unitStore';
 import { borderRadius, colors, fontFamily, fontSize, spacing } from '@/src/theme';
@@ -40,8 +41,10 @@ const SECTIONS: {
     icon: 'layers-outline', fg: colors.mist, bg: colors.mistSoft },
   { href: '/arrival', label: 'Arrivals', blurb: 'What turned up',
     icon: 'cube-outline', fg: colors.root, bg: colors.rootSoft },
-  { href: '/plans', label: 'Plans', blurb: 'Varieties and seasons',
+  { href: '/plans', label: 'Plans', blurb: 'When to stick, root and deliver',
     icon: 'calendar-outline', fg: colors.bloom, bg: colors.bloomSoft },
+  { href: '/reports', label: 'Reports', blurb: 'In, standing, and out',
+    icon: 'stats-chart-outline', fg: colors.root, bg: colors.rootSoft },
   { href: '/protocol', label: 'Protocol', blurb: 'What to do, and revise it',
     icon: 'document-text-outline', fg: colors.mist, bg: colors.mistSoft },
   { href: '/motherstock', label: 'Motherstock', blurb: 'The line behind the plan',
@@ -59,6 +62,7 @@ export default function Home() {
 
   const [plans, setPlans] = useState<PlanSummary[] | null>(null);
   const [detail, setDetail] = useState<PlanDetail | null>(null);
+  const [toCheck, setToCheck] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -78,6 +82,16 @@ export default function Home() {
           const chosen = (plan && rows.find((r) => r.name === plan)?.name) || rows[0]?.name || null;
           if (chosen && chosen !== plan) await setPlan(chosen);
           setDetail(chosen ? await planDetail(chosen) : null);
+          // Deliveries sitting at the gate with nothing of them on the ledger.
+          // Not fatal if it fails -- it is a prompt, not the screen.
+          try {
+            const waiting = await consignments();
+            setToCheck(
+              waiting.filter((c) => c.status === 'Awaiting Check' || c.status === 'Held').length,
+            );
+          } catch {
+            setToCheck(0);
+          }
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Could not load the plan.');
         }
@@ -130,9 +144,16 @@ export default function Home() {
         >
           <View style={{ flex: 1 }}>
             <Text style={s.planLabel}>Working to</Text>
-            <Text style={s.planName} numberOfLines={1}>{detail.variety}</Text>
+            {/* Not the variety. A unit runs dozens and whichever one happened to
+                resolve first is not news -- the plan and the farm are. The
+                variety is chosen on the plans screen, where there is room to
+                filter for it. */}
+            <Text style={s.planName} numberOfLines={1}>{detail.propagation_plan}</Text>
             <Text style={s.planSub} numberOfLines={1}>
-              {detail.farm} · {detail.propagation_plan}
+              {detail.farm ?? '—'}
+              {detail.totals?.weeks_sticking
+                ? ` · ${detail.totals.weeks_sticking} weeks of sticking`
+                : ''}
             </Text>
           </View>
           {detail.status ? <Pill value={detail.status} /> : null}
@@ -140,6 +161,20 @@ export default function Home() {
       ) : (
         <Text style={s.none}>No propagation plan on this server yet.</Text>
       )}
+
+      {toCheck > 0 ? (
+        <TouchableOpacity
+          style={s.needs}
+          activeOpacity={0.7}
+          onPress={() => router.push('/arrival')}
+        >
+          <Ionicons name="cube-outline" size={18} color={colors.root} />
+          <Text style={s.needsText}>
+            {toCheck} {toCheck === 1 ? 'delivery is' : 'deliveries are'} waiting to be checked in.
+          </Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.root} />
+        </TouchableOpacity>
+      ) : null}
 
       <Text style={s.sectionLabel}>Record something</Text>
       <View style={s.grid}>
@@ -251,6 +286,16 @@ function Stat({ label, value, warn }: { label: string; value: string; warn?: boo
 }
 
 const s = StyleSheet.create({
+  needs: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.rootSoft,
+    marginBottom: spacing.lg,
+  },
+  needsText: { flex: 1, fontFamily: fontFamily.medium, fontSize: fontSize.xs, color: colors.root },
   greeting: { fontFamily: fontFamily.bold, fontSize: fontSize.xl, color: colors.text },
   today: {
     fontFamily: fontFamily.regular,

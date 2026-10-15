@@ -60,6 +60,12 @@ export interface PlanDetail {
   reason?: string;
   consignments?: Consignment[];
   weeks?: PlanWeek[];
+  /**
+   * The plan's headline figures. Loosely typed on purpose: the server sends
+   * two dozen of them and the screens here read three, so naming each one
+   * would be a list to keep in step for no benefit.
+   */
+  totals?: Record<string, number | string>;
   actuals?: {
     recorded: number;
     reported_to: string | null;

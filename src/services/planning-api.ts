@@ -276,3 +276,85 @@ function dropEmpty<T extends Record<string, unknown>>(o: T): Record<string, unkn
   }
   return out;
 }
+
+// ----------------------------------------------------------- the unit calendar
+export interface PropagationVariety {
+  variety: string;
+  variety_name: string | null;
+  plans: number;
+  plants_to_stick: number;
+  farms: string[];
+  next_sticking: string | null;
+}
+
+/** The varieties that have a propagation plan, which is what the filter offers. */
+export function propagationVarieties(farm?: string): Promise<PropagationVariety[]> {
+  return get<PropagationVariety[]>('propagation_varieties', farm ? { farm } : {});
+}
+
+export type ScheduleKind =
+  | 'tc_order'
+  | 'tc_arrive'
+  | 'consignment'
+  | 'consignment_ready'
+  | 'stick'
+  | 'root'
+  | 'nursery'
+  | 'harden'
+  | 'to_farm';
+
+export interface ScheduleEvent {
+  date: string;
+  iso_year: number;
+  week_no: number;
+  week_label: string;
+  kind: ScheduleKind;
+  kind_label: string;
+  title: string;
+  qty: number | null;
+  note: string | null;
+  /**
+   * `plan` where the date is stored on the plan, `derived` where it is the
+   * sticking date plus what the protocol says the phase takes. The screen says
+   * which, because one can be chased and the other cannot.
+   */
+  source: 'plan' | 'derived';
+  ref: string | null;
+}
+
+export interface PropagationSchedule {
+  propagation_plan: string | null;
+  plan?: string;
+  variety?: string | null;
+  farm?: string | null;
+  status?: string;
+  reason?: string;
+  protocol?: string | null;
+  totals?: Record<string, number | string>;
+  events: ScheduleEvent[];
+  by_week: { week: string; events: ScheduleEvent[] }[];
+  phases: { phase: string; weeks: number; note: string }[];
+  route_summary?: string | null;
+  cycle_time_weeks?: number;
+  max_cycles?: number;
+}
+
+/**
+ * One variety's plan as dated work: order the tissue culture, stick, root, pot,
+ * harden, deliver.
+ */
+export function propagationSchedule(args: {
+  propagationPlan?: string;
+  plan?: string;
+  variety?: string;
+  farm?: string;
+  from?: string;
+}): Promise<PropagationSchedule> {
+  const params: Record<string, unknown> = {};
+  if (args.propagationPlan) params.propagation_plan = args.propagationPlan;
+  if (args.plan) params.plan = args.plan;
+  if (args.variety) params.variety = args.variety;
+  if (args.farm) params.farm = args.farm;
+  if (args.from) params.from_date = args.from;
+  return get<PropagationSchedule>('propagation_schedule', params);
+}

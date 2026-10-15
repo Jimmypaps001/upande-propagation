@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/src/components/Screen';
 import { Pill } from '@/src/components/Pill';
-import { productionPlans, type ProductionPlan } from '@/src/services/planning-api';
+import { PickerField } from '@/src/components/PickerField';
+import {
+  productionPlans,
+  propagationVarieties,
+  type ProductionPlan,
+  type PropagationVariety,
+} from '@/src/services/planning-api';
 import { borderRadius, colors, fontFamily, fontSize, spacing } from '@/src/theme';
 
 /**
@@ -19,6 +25,8 @@ export default function Plans() {
   const drawer = useNavigation<{ openDrawer: () => void }>('/(drawer)');
 
   const [plans, setPlans] = useState<ProductionPlan[] | null>(null);
+  const [propagated, setPropagated] = useState<PropagationVariety[]>([]);
+  const [variety, setVariety] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -26,9 +34,17 @@ export default function Plans() {
     () =>
       (async () => {
         try {
-          const res = await productionPlans();
+          const [res, vs] = await Promise.all([
+            productionPlans(),
+            // Which varieties the unit actually propagates, and when each is
+            // next stuck. A variety with no propagation plan has nothing dated
+            // behind it, so the filter says so rather than offering an empty
+            // calendar.
+            propagationVarieties().catch(() => []),
+          ]);
           setError(null);
           setPlans(res.plans);
+          setPropagated(vs);
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Could not load the plans.');
         }
@@ -46,7 +62,38 @@ export default function Plans() {
     setRefreshing(false);
   };
 
-  const groups = groupByVariety(plans ?? []);
+  const filtered = useMemo(
+    () => (plans ?? []).filter((p) => !variety || p.variety === variety),
+    [plans, variety],
+  );
+  const groups = groupByVariety(filtered);
+
+  // Every variety that has a plan of either kind, each labelled with what the
+  // unit is owed for it.
+  const options = useMemo(() => {
+    const names = new Map<string, string>();
+    for (const p of plans ?? []) if (p.variety) names.set(p.variety, p.variety);
+    for (const v of propagated) names.set(v.variety, v.variety_name ?? v.variety);
+    const byVariety = new Map(propagated.map((v) => [v.variety, v]));
+    return [
+      { value: '', label: 'Every variety' },
+      ...[...names.entries()]
+        .map(([value, label]) => {
+          const p = byVariety.get(value);
+          return {
+            value,
+            label,
+            hint: p
+              ? `${p.plants_to_stick.toLocaleString()} to stick${p.next_sticking ? ` · from ${p.next_sticking}` : ''}`
+              : 'no propagation plan',
+            favourite: !!p,
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    ];
+  }, [plans, propagated]);
+
+  const chosen = propagated.find((v) => v.variety === variety);
 
   return (
     <Screen
@@ -59,8 +106,31 @@ export default function Plans() {
       refreshing={refreshing}
       onRefresh={refresh}
     >
+      <PickerField
+        label="Variety"
+        value={variety}
+        placeholder="Every variety"
+        load={async () => options}
+        onChange={(v) => setVariety(v || null)}
+        favouriteHeading="Propagated here"
+      />
+
+      {chosen ? (
+        <View style={s.chosen}>
+          <Ionicons name="calendar-outline" size={16} color={colors.leaf} />
+          <Text style={s.chosenText}>
+            {chosen.plants_to_stick.toLocaleString()} plants to stick across {chosen.plans} plan
+            {chosen.plans === 1 ? '' : 's'}
+            {chosen.next_sticking ? `, from ${chosen.next_sticking}` : ''}. Open one to see the dates.
+          </Text>
+        </View>
+      ) : null}
+
       {plans && plans.length === 0 ? (
         <Text style={s.none}>No production plan on this server yet.</Text>
+      ) : null}
+      {plans && plans.length > 0 && filtered.length === 0 ? (
+        <Text style={s.none}>No plan for that variety.</Text>
       ) : null}
 
       {groups.map(([variety, rows]) => (
@@ -130,6 +200,15 @@ const clamp = (n: number): number => Math.max(0, Math.min(100, Math.round(n || 0
 const num = (n: number | undefined): string => (n ? Math.round(n).toLocaleString() : '0');
 
 const s = StyleSheet.create({
+  chosen: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.leafSoft,
+    marginBottom: spacing.lg,
+  },
+  chosenText: { flex: 1, fontFamily: fontFamily.medium, fontSize: fontSize.xs, color: colors.leaf, lineHeight: 17 },
   none: { fontFamily: fontFamily.regular, fontSize: fontSize.sm, color: colors.textSecondary },
   group: { marginBottom: spacing.xl },
   groupHead: {
