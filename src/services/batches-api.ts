@@ -9,6 +9,35 @@
  */
 import { api } from './api';
 import { BATCH_MODULE, endpoint } from './api-module';
+import { storage, StorageKeys } from './storage';
+
+/**
+ * The unit this phone records for, attached to every call to the propagation
+ * server.
+ *
+ * A propagation unit is a Warehouse and a Warehouse belongs to one company, so
+ * the unit chosen at setup is what scopes every list the app shows: the
+ * warehouses it may receive into, the farms it may dispatch to, the arrivals
+ * and reports it may see. There is deliberately no separate company picker --
+ * two things that must agree are two things that can disagree, and the one the
+ * operator actually chose is the shed they are standing in.
+ *
+ * It is attached here rather than at each call site because forgetting it at
+ * one site does not fail loudly: it silently widens that screen to every
+ * company on the site. Frappe drops arguments a method does not declare, so
+ * sending it to a method that has no use for it is free.
+ */
+async function withUnit(params: Record<string, unknown>): Promise<Record<string, unknown>> {
+  if (params.unit != null || params.company != null) return params;
+  try {
+    const unit = await storage.get(StorageKeys.unit);
+    return unit ? { ...params, unit } : params;
+  } catch {
+    // Storage can throw before setup finishes. The server then falls back to
+    // the user's default company, which is what it did before this existed.
+    return params;
+  }
+}
 
 /**
  * Both helpers are exported because operations-api answers on the same server
@@ -19,7 +48,7 @@ export async function propGet<T>(method: string, params: Record<string, unknown>
   const res = await api<{ message?: T }>({
     method: 'GET',
     url: endpoint(`${BATCH_MODULE}.${method}`).path,
-    params,
+    params: await withUnit(params),
   });
   if (res.message === undefined) throw new Error('The server returned nothing.');
   return res.message;
@@ -29,7 +58,7 @@ export async function propPost<T>(method: string, data: Record<string, unknown> 
   const res = await api<{ message?: T }>({
     method: 'POST',
     url: endpoint(`${BATCH_MODULE}.${method}`).path,
-    data,
+    data: await withUnit(data),
   });
   if (res.message === undefined) throw new Error('The server returned nothing.');
   return res.message;
