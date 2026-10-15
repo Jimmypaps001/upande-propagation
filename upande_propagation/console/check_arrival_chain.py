@@ -116,6 +116,9 @@ def main():
 	readings = sheet(res["check"]["parameters"])
 	out = ops.consignment_detail(cname)
 	check("nothing to batch before the check", not out["can_batch"])
+	check("the delivery knows it has no paperwork yet",
+	      out["paperwork_needed"] is True and out["attachments"] == [],
+	      out["paperwork_needed"])
 
 	# karenroses will not submit a goods receipt without the supplier's paperwork
 	# on it, so the gate photo has to travel with the consignment.
@@ -131,6 +134,11 @@ def main():
 						"content": "waybill", "is_private": 1,
 						"attached_to_doctype": "Plant Consignment",
 						"attached_to_name": target}).insert()
+
+	out = ops.consignment_detail(cname)
+	check("and knows once the waybill is on it",
+	      out["paperwork_needed"] is False and len(out["attachments"]) == 1,
+	      len(out["attachments"]))
 
 	done = pc.accept(cname, accepted=900, rejected=100, readings=readings,
 					reason="Overheated in transit", rejected_warehouse=reject_wh)
@@ -148,6 +156,9 @@ def main():
 		pr.items[0].rejected_warehouse == reject_wh, pr.items[0].rejected_warehouse)
 	check("the inspection is linked on the line",
 		pr.items[0].quality_inspection == done["quality_inspection"])
+	check("the gate photo travelled onto the receipt",
+	      frappe.db.count("File", {"attached_to_doctype": "Purchase Receipt",
+	                               "attached_to_name": pr.name}) >= 1)
 	qi = frappe.get_doc("Quality Inspection", done["quality_inspection"])
 	check("inspection is submitted", qi.docstatus == 1, qi.docstatus)
 	check("inspection carries the readings", len(qi.readings) >= 5, len(qi.readings))

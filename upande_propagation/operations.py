@@ -166,8 +166,17 @@ def consignment_detail(consignment):
 	for key in ("arrival_date", "checked_on"):
 		if payload.get(key):
 			payload[key] = str(payload[key])
+	# What paperwork is on it. A site can refuse to submit a goods receipt
+	# without the supplier's delivery note attached -- karenroses does -- and
+	# the phone has to know that before it tries, not after the stock is held.
+	files = frappe.get_all(
+		"File", filters={"attached_to_doctype": "Plant Consignment",
+		                 "attached_to_name": consignment},
+		fields=["name", "file_url", "file_name"])
 	return {
 		"consignment": payload,
+		"attachments": files,
+		"paperwork_needed": not files and _receipt_needs_paperwork(),
 		"check": check_sheet(consignment),
 		"batches": frappe.get_all(
 			"Propagation Batch",
@@ -180,6 +189,25 @@ def consignment_detail(consignment):
 		              and doc.form in PROPAGATABLE_FORMS
 		              and cint(doc.qty_unbatched) > 0),
 	}
+
+
+def _receipt_needs_paperwork():
+	"""Does this site refuse a goods receipt with nothing attached to it?
+
+	It is a Server Script on Purchase Receipt, not a field, so there is nothing
+	in the schema to read. Matching one by its reference, its event and the
+	fact that it looks at File rows is crude, but the alternative is letting
+	the unit find out by having a delivery held at the gate.
+	"""
+	if not frappe.db.exists("DocType", "Server Script"):
+		return False
+	return bool(frappe.db.exists("Server Script", {
+		"reference_doctype": "Purchase Receipt",
+		"script_type": "DocType Event",
+		"doctype_event": ["in", ("Before Submit", "Before Save", "Before Validate")],
+		"disabled": 0,
+		"script": ["like", "%attached_to_doctype%"],
+	}))
 
 
 def new_consignment(supplier, variety, qty_received, arrival_date=None,
