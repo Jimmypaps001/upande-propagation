@@ -6,7 +6,9 @@ import { Screen } from '@/src/components/Screen';
 import { Button } from '@/src/components/Button';
 import { LabeledInput } from '@/src/components/LabeledInput';
 import { PickerField, type PickerOption } from '@/src/components/PickerField';
+import { PhotoCapture } from '@/src/components/PhotoCapture';
 import { useToast } from '@/src/components/Toast';
+import { apiClient } from '@/src/services/api';
 import { lightHaptic, successHaptic } from '@/src/services/feedback';
 import {
   checkConsignment,
@@ -16,6 +18,7 @@ import {
   type CheckParameter,
   type ConsignmentDetail,
 } from '@/src/services/operations-api';
+import { attachToDoc } from '@/src/services/upload';
 import { userMessage } from '@/src/services/user-message';
 import { accentFor, borderRadius, colors, fontFamily, fontSize, spacing } from '@/src/theme';
 
@@ -57,6 +60,8 @@ export default function ArrivalDetail() {
   const [deliveryNote, setDeliveryNote] = useState('');
   const [readings, setReadings] = useState<Record<string, Reading>>({});
   const [held, setHeld] = useState<string | null>(null);
+  const [waybill, setWaybill] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // benching
   const [benchQty, setBenchQty] = useState('');
@@ -118,10 +123,43 @@ export default function ArrivalDetail() {
   const over = c ? acceptedN + rejectedN > c.qty_received : false;
   const unaccounted = c ? c.qty_received - acceptedN - rejectedN : 0;
 
+  // The server keeps file_url relative; the picker and the <Image> both want a
+  // full one, and the base URL is wherever this phone is pointed.
+  const attachedPreview = useMemo(() => {
+    const f = data?.attachments?.[0];
+    if (!f) return null;
+    return f.file_url.startsWith('http')
+      ? f.file_url
+      : `${apiClient().defaults.baseURL ?? ''}${f.file_url}`;
+  }, [data]);
+
   const anyRejectedReading = useMemo(
     () => Object.values(readings).some((r) => r.verdict === 'Rejected'),
     [readings],
   );
+
+  /** Attach the picture now; the server copies it onto the receipt on check-in. */
+  const addWaybill = async (uri: string) => {
+    if (!c) return;
+    setWaybill(uri);
+    setUploading(true);
+    try {
+      await attachToDoc({
+        doctype: 'Plant Consignment',
+        docname: c.name,
+        uri,
+        fileName: `waybill-${c.consignment}.jpg`,
+      });
+      successHaptic();
+      toast.showSuccess('Waybill attached.');
+      await load();
+    } catch (e) {
+      setWaybill(null);
+      toast.showError(userMessage(e, 'The picture did not upload.'));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const submitCheck = async () => {
     if (!c || busy) return;
@@ -335,6 +373,24 @@ export default function ArrivalDetail() {
                 autoCapitalize="characters"
               />
 
+              <PhotoCapture
+                label="Waybill"
+                hint={
+                  data?.attachments?.length
+                    ? `${data.attachments.length} already on this delivery`
+                    : 'A picture of the paper the driver handed over'
+                }
+                uri={waybill ?? attachedPreview}
+                onCapture={addWaybill}
+                required={data?.paperwork_needed}
+              />
+              {data?.paperwork_needed && !waybill ? (
+                <Text style={s.warn}>
+                  This site will not put a goods receipt through without the paperwork attached, so
+                  the stock would be held.
+                </Text>
+              ) : null}
+
               {params.length ? (
                 <>
                   <Text style={s.section}>
@@ -368,14 +424,14 @@ export default function ArrivalDetail() {
               )}
 
               <Button
+                loading={busy || uploading}
                 label={
                   acceptedN > 0
                     ? `Receive ${num(acceptedN)} into ${c.warehouse ?? 'the unit'}`
                     : 'Turn the whole delivery away'
                 }
                 onPress={submitCheck}
-                loading={busy}
-                disabled={over}
+                disabled={over || uploading}
                 color={acceptedN > 0 ? undefined : colors.danger}
                 iconLeft={acceptedN > 0 ? 'enter-outline' : 'close-circle-outline'}
                 style={{ marginTop: spacing.md }}

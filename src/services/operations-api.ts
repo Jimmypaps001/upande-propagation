@@ -147,6 +147,14 @@ export interface ConsignmentDetail {
     notes: string | null;
   };
   check: CheckSheet;
+  /** Files on the delivery. The server copies them onto the receipt it becomes. */
+  attachments: { name: string; file_url: string; file_name: string }[];
+  /**
+   * True when this site refuses to submit a goods receipt with nothing
+   * attached and nothing is attached yet. Knowing beforehand is the point:
+   * finding out afterwards means a delivery held at the gate.
+   */
+  paperwork_needed: boolean;
   batches: {
     name: string;
     batch_title: string | null;

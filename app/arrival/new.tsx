@@ -6,6 +6,7 @@ import { Screen } from '@/src/components/Screen';
 import { Button } from '@/src/components/Button';
 import { LabeledInput } from '@/src/components/LabeledInput';
 import { ChipChoice, PickerField, type PickerOption } from '@/src/components/PickerField';
+import { PhotoCapture } from '@/src/components/PhotoCapture';
 import { useToast } from '@/src/components/Toast';
 import { successHaptic } from '@/src/services/feedback';
 import {
@@ -18,6 +19,7 @@ import {
   type ArrivalForm,
 } from '@/src/services/operations-api';
 import { openPlantOrders, type OpenOrder } from '@/src/services/planning-api';
+import { attachToDoc } from '@/src/services/upload';
 import { userMessage } from '@/src/services/user-message';
 import { borderRadius, colors, fontFamily, fontSize, spacing } from '@/src/theme';
 
@@ -44,6 +46,7 @@ export default function NewArrival() {
   const [deliveryNote, setDeliveryNote] = useState('');
   const [rate, setRate] = useState('');
   const [notes, setNotes] = useState('');
+  const [waybill, setWaybill] = useState<string | null>(null);
 
   const [code, setCode] = useState<string | null>(null);
   const [ordered, setOrdered] = useState<OpenOrder[] | null>(null);
@@ -139,6 +142,25 @@ export default function NewArrival() {
         rate: Number(rate.replace(/[^0-9.]/g, '')) || 0,
         notes: notes.trim() || undefined,
       });
+      // The photo is taken at the gate, before the document it belongs to
+      // exists, so it is uploaded the moment there is something to attach it
+      // to. A failure here must not lose the arrival that did save.
+      if (waybill) {
+        try {
+          await attachToDoc({
+            doctype: 'Plant Consignment',
+            docname: res.consignment.name,
+            uri: waybill,
+            fileName: `waybill-${res.consignment.consignment}.jpg`,
+          });
+        } catch {
+          toast.notify(
+            'The arrival was saved but the waybill picture did not upload. Add it on the next screen.',
+            'info',
+            5000,
+          );
+        }
+      }
       successHaptic();
       toast.showSuccess(`${res.consignment.consignment} recorded. Check it in to receive the stock.`);
       router.replace({ pathname: '/arrival/[name]', params: { name: res.consignment.name } });
@@ -230,6 +252,14 @@ export default function NewArrival() {
         iconLeft="receipt-outline"
         autoCapitalize="characters"
         helperText="Some sites will not put a receipt through without it."
+      />
+
+      <PhotoCapture
+        label="Waybill"
+        hint="The supplier's delivery note. The receipt carries this picture."
+        uri={waybill}
+        onCapture={setWaybill}
+        onClear={() => setWaybill(null)}
       />
 
       <LabeledInput
