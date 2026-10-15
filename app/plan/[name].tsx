@@ -35,6 +35,19 @@ const KIND: Record<ScheduleKind, { icon: React.ComponentProps<typeof Ionicons>['
   nursery: { icon: 'leaf-outline', fg: colors.leaf, bg: colors.leafSoft },
   harden: { icon: 'sunny-outline', fg: colors.leaf, bg: colors.leafSoft },
   to_farm: { icon: 'paper-plane-outline', fg: colors.bloom, bg: colors.bloomSoft },
+
+  // Motherstock work. Deliberately one family of colour away from the raising
+  // chain above: building the line that supplies cuttings is a different job
+  // from raising the crop off it, and a week can be both.
+  ms_tc_order: { icon: 'cart-outline', fg: colors.mist, bg: colors.mistSoft },
+  ms_tc_arrive: { icon: 'cube-outline', fg: colors.mist, bg: colors.mistSoft },
+  ms_cuttable: { icon: 'cut-outline', fg: colors.root, bg: colors.rootSoft },
+  ms_multiply: { icon: 'copy-outline', fg: colors.root, bg: colors.rootSoft },
+  ms_productive: { icon: 'leaf-outline', fg: colors.leaf, bg: colors.leafSoft },
+  ms_first_cut: { icon: 'cut-outline', fg: colors.leaf, bg: colors.leafSoft },
+  ms_full: { icon: 'trending-up-outline', fg: colors.leaf, bg: colors.leafSoft },
+  ms_renew: { icon: 'refresh-outline', fg: colors.mist, bg: colors.mistSoft },
+  ms_expire: { icon: 'hourglass-outline', fg: colors.textMuted, bg: colors.surfaceAlt },
 };
 
 /** The four things a unit filters this list down to. */
@@ -96,7 +109,6 @@ export default function Plan() {
     setRefreshing(false);
   };
 
-  const coverage = Math.round(plan?.coverage_pct ?? 0);
 
   const today = new Date().toISOString().slice(0, 10);
   const events = useMemo(() => {
@@ -224,29 +236,54 @@ export default function Plan() {
             </Text>
           ) : null}
 
-          <Card title="Against demand">
+          <Card title="What this plan asks for">
             <View style={s.bigRow}>
-              <Text style={[s.big, { color: coverageColour(coverage) }]}>{coverage}%</Text>
-              <Text style={s.bigUnit}>of what the market asked for</Text>
+              <Text style={s.big}>{num(Number(schedule?.totals?.plants_to_stick ?? 0))}</Text>
+              <Text style={s.bigUnit}>plants to raise</Text>
             </View>
-            <View style={s.bar}>
-              <View
-                style={[
-                  s.barFill,
-                  { width: `${Math.min(100, coverage)}%`, backgroundColor: coverageColour(coverage) },
-                ]}
-              />
-            </View>
-            <Row label="Demand" value={`${num(plan.total_demand_stems)} stems`} />
-            <Row label="Planned production" value={`${num(plan.total_production_stems)} stems`} />
-            <Row label="Weeks covered" value={String(plan.weeks_covered ?? 0)} />
-            {plan.weeks_in_deficit ? (
-              <Row label="Weeks short" value={String(plan.weeks_in_deficit)} warn />
-            ) : null}
+            <Row label="Weeks of planting" value={String(plan.weeks_covered ?? 0)} />
             {plan.new_beds_required ? (
               <Row label="New beds needed" value={String(plan.new_beds_required)} />
             ) : null}
           </Card>
+
+          {schedule?.motherstock?.length ? (
+            schedule.motherstock.map((b) => (
+              <Card key={b.name} title="Motherstock">
+                <View style={s.bigRow}>
+                  <Text style={s.big}>{num(b.cuttings_per_week)}</Text>
+                  <Text style={s.bigUnit}>cuttings a week at full capacity</Text>
+                </View>
+                <Row label="Line" value={`${b.name} · ${b.batch_status ?? '—'}`} />
+                <Row label="Mother plants" value={num(b.mother_plants)} />
+                {b.build_up_cycles ? (
+                  <Row
+                    label="Multiplication"
+                    value={`${b.build_up_cycles} cycle(s) × ${b.multiplication_factor || 1}`}
+                  />
+                ) : null}
+                {b.cutting_from ? <Row label="Cutting from" value={b.cutting_from} /> : null}
+                {b.productive_weeks ? (
+                  <Row label="Cutting weeks left" value={String(b.productive_weeks)} />
+                ) : null}
+                {b.renewal_tc_order_date ? (
+                  <Row label="Order renewal TC by" value={b.renewal_tc_order_date} />
+                ) : null}
+                {b.expiry_date ? <Row label="Line expires" value={b.expiry_date} /> : null}
+                {b.schedule_warning ? (
+                  <Text style={s.warn}>{b.schedule_warning}</Text>
+                ) : null}
+              </Card>
+            ))
+          ) : schedule?.motherstock_reason ? (
+            <Card title="Motherstock">
+              {/* Bought-in is a legitimate answer, not a missing record. */}
+              <Text style={s.none}>
+                No motherstock line for this variety — its plants are bought in rather than cut
+                here.
+              </Text>
+            </Card>
+          ) : null}
 
           <Card title="The record">
             <Row label="Plan" value={plan.name} />
@@ -286,13 +323,6 @@ function tone(p: ProductionPlan): 'neutral' | 'success' | 'warn' | 'danger' {
   return 'neutral';
 }
 
-/** Short of demand is the thing worth seeing, so it is the thing that colours. */
-function coverageColour(pct: number): string {
-  if (pct >= 100) return colors.leaf;
-  if (pct >= 85) return colors.warning;
-  return colors.error;
-}
-
 const num = (n: number | undefined): string => (n ? Math.round(n).toLocaleString() : '0');
 
 function Row({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
@@ -307,6 +337,12 @@ function Row({ label, value, warn }: { label: string; value: string; warn?: bool
 }
 
 const s = StyleSheet.create({
+  warn: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.xs,
+    color: colors.warning,
+    marginTop: spacing.sm,
+  },
   head: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg },
   section: {
     fontFamily: fontFamily.semiBold,

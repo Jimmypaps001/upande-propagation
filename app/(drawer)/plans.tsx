@@ -156,18 +156,9 @@ export default function Plans() {
                 {p.farm ?? '—'} · {p.name}
               </Text>
 
-              <View style={s.bar}>
-                <View style={[s.barFill, { width: `${clamp(p.coverage_pct)}%` }]} />
-              </View>
               <View style={s.figures}>
-                <Text style={s.fig}>{Math.round(p.coverage_pct)}% of demand</Text>
-                <Text style={s.figMuted}>
-                  {num(p.total_production_stems)} of {num(p.total_demand_stems)} stems
-                </Text>
+                <Text style={s.fig}>{p.weeks_covered ?? 0} week(s) of planting</Text>
               </View>
-              {p.weeks_in_deficit ? (
-                <Text style={s.deficit}>{p.weeks_in_deficit} week(s) short</Text>
-              ) : null}
             </TouchableOpacity>
           ))}
         </View>
@@ -196,8 +187,6 @@ function toneFor(p: ProductionPlan): 'neutral' | 'success' | 'warn' | 'danger' {
   return 'neutral';
 }
 
-const clamp = (n: number): number => Math.max(0, Math.min(100, Math.round(n || 0)));
-const num = (n: number | undefined): string => (n ? Math.round(n).toLocaleString() : '0');
 
 const s = StyleSheet.create({
   chosen: {

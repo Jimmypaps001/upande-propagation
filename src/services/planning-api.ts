@@ -301,7 +301,19 @@ export type ScheduleKind =
   | 'root'
   | 'nursery'
   | 'harden'
-  | 'to_farm';
+  | 'to_farm'
+  // The motherstock line the cuttings come off. Without these the calendar
+  // asks for 4,000 cuttings in a week with nothing standing to cut them from,
+  // and the multiplication weeks never appear at all.
+  | 'ms_tc_order'
+  | 'ms_tc_arrive'
+  | 'ms_cuttable'
+  | 'ms_multiply'
+  | 'ms_productive'
+  | 'ms_first_cut'
+  | 'ms_full'
+  | 'ms_renew'
+  | 'ms_expire';
 
 export interface ScheduleEvent {
   date: string;
@@ -318,7 +330,7 @@ export interface ScheduleEvent {
    * sticking date plus what the protocol says the phase takes. The screen says
    * which, because one can be chased and the other cannot.
    */
-  source: 'plan' | 'derived';
+  source: 'plan' | 'derived' | 'motherstock';
   ref: string | null;
 }
 
@@ -337,6 +349,9 @@ export interface PropagationSchedule {
   route_summary?: string | null;
   cycle_time_weeks?: number;
   max_cycles?: number;
+  motherstock?: MotherstockLinePlan[];
+  /** "no motherstock line for this variety" — bought-in, not broken. */
+  motherstock_reason?: string | null;
 }
 
 /**
@@ -357,4 +372,137 @@ export function propagationSchedule(args: {
   if (args.farm) params.farm = args.farm;
   if (args.from) params.from_date = args.from;
   return get<PropagationSchedule>('propagation_schedule', params);
+}
+
+// ----------------------------------------------------- what the unit must do
+//
+// The unit does not argue with demand -- by the time a plan reaches it the
+// argument is settled and the plan is approved. These two calls carry the only
+// things it owns: what leaves for the farms, and the motherstock the cuttings
+// come off.
+
+export interface DeliveryRow {
+  plan: string;
+  variety: string | null;
+  farm: string | null;
+  season: string | null;
+  protocol: string | null;
+  deliver_on: string;
+  week_label: string;
+  stuck_in_week: string | null;
+  plant_week: string | null;
+  plants: number;
+  delivered: number;
+  outstanding: number;
+  variance: number;
+  state: string;
+  delivered_on: string | null;
+  /** Where this week's plants come from, which is how the unit raises them. */
+  source: {
+    existing_motherstock: number;
+    new_motherstock: number;
+    bought: number;
+  };
+  notes: string | null;
+}
+
+export interface DeliveryWeek {
+  week: string;
+  deliver_on: string;
+  farms: string[];
+  plants: number;
+  delivered: number;
+  outstanding: number;
+  rows: DeliveryRow[];
+}
+
+export interface DeliverySchedule {
+  weeks: DeliveryWeek[];
+  rows: DeliveryRow[];
+  from_date?: string;
+  to_date?: string;
+  totals: { plants: number; delivered: number; outstanding: number; weeks: number };
+  farms: string[];
+  varieties: string[];
+  /** Why the list is empty, when it is. An empty lorry list and a broken
+   *  screen look identical without it. */
+  reason?: string | null;
+}
+
+/** What the unit owes the farms, by week. Approved plans only. */
+export function deliverySchedule(opts: {
+  farm?: string;
+  variety?: string;
+  from_date?: string;
+  weeks?: number;
+} = {}): Promise<DeliverySchedule> {
+  return get<DeliverySchedule>('delivery_schedule', dropEmpty({
+    farm: opts.farm,
+    variety: opts.variety,
+    from_date: opts.from_date,
+    weeks: opts.weeks != null ? String(opts.weeks) : undefined,
+  }));
+}
+
+export interface MotherstockStep {
+  step: string;
+  week_label: string;
+  target_date: string;
+  mother_plants: number;
+  pots: number;
+  notes: string | null;
+  kind: string;
+  kind_label: string;
+  batch: string;
+  done: boolean;
+}
+
+/** The motherstock line as the propagation unit works it: the richer read
+ *  used by the cutting/multiplication calendar, distinct from the planning
+ *  office's costing view above. */
+export interface MotherstockLinePlan {
+  name: string;
+  variety: string | null;
+  farm: string | null;
+  batch_status: string | null;
+  generation: number;
+  mother_plants: number;
+  pots_required: number;
+  bench_sqm: number;
+  effective_peak_cuttings: number;
+  build_up_cycles: number;
+  multiplication_factor: number;
+  tc_plants_required: number;
+  first_sticking_date: string | null;
+  max_pc_date: string | null;
+  productive_weeks: number;
+  expiry_date: string | null;
+  renewal_tc_order_date: string | null;
+  schedule_warning: string | null;
+  cutting_from: string | null;
+  cuttings_per_week: number;
+  steps: MotherstockStep[];
+}
+
+export interface MotherstockPlan {
+  variety: string | null;
+  farm: string | null;
+  batches: MotherstockLinePlan[];
+  steps: MotherstockStep[];
+  kinds?: Record<string, string>;
+  /** "no motherstock line for this variety" — bought-in, not broken. */
+  reason?: string | null;
+}
+
+/** How this variety's cuttings are raised: when cut, when multiplied. */
+export function motherstockPlan(opts: {
+  variety?: string;
+  farm?: string;
+  propagation_plan?: string;
+} = {}): Promise<MotherstockPlan> {
+  return get<MotherstockPlan>('motherstock_plan', dropEmpty({
+    variety: opts.variety,
+    farm: opts.farm,
+    propagation_plan: opts.propagation_plan,
+  }));
 }

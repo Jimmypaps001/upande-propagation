@@ -6,8 +6,10 @@ import { Card } from '@/src/components/Card';
 import { Pill } from '@/src/components/Pill';
 import {
   motherstockLine,
+  motherstockPlan,
   productionPlans,
   type MotherstockLine,
+  type MotherstockPlan,
 } from '@/src/services/planning-api';
 import { colors, fontFamily, fontSize, spacing } from '@/src/theme';
 
@@ -24,6 +26,9 @@ export default function Motherstock() {
 
   const [plan, setPlan] = useState<string | null>(planParam ?? null);
   const [line, setLine] = useState<MotherstockLine | null>(null);
+  // The same line as work rather than as a purchase: which weeks are cutting
+  // weeks and which are multiplication weeks.
+  const [work, setWork] = useState<MotherstockPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -40,6 +45,7 @@ export default function Motherstock() {
           setPlan(use);
           setError(null);
           setLine(use ? await motherstockLine(use) : null);
+          setWork(use ? await motherstockPlan({ propagation_plan: use }) : null);
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Could not load the motherstock.');
         }
@@ -78,6 +84,36 @@ export default function Motherstock() {
           {line.reason ??
             'This protocol raises its plants from a bought-in pool, so there is no motherstock line.'}
         </Text>
+      ) : null}
+
+      {work?.steps?.length ? (
+        <Card title="When to cut, when to multiply">
+          {/* The build-up in order. A unit reading this should be able to tell,
+              for any week, whether it is supplying cuttings or still building
+              the line that will supply them. */}
+          {work.steps.map((st) => (
+            <View key={`${st.batch}-${st.step}-${st.target_date}`} style={s.step}>
+              <View style={[s.dot, st.done ? s.dotDone : null]} />
+              <View style={{ flex: 1 }}>
+                <Text style={[s.stepTitle, st.done ? s.stepDone : null]} numberOfLines={2}>
+                  {st.step}
+                </Text>
+                {st.notes ? (
+                  <Text style={s.stepNote} numberOfLines={3}>
+                    {st.notes}
+                  </Text>
+                ) : null}
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={s.stepWeek}>{st.week_label}</Text>
+                <Text style={s.stepDate}>{st.target_date}</Text>
+                {st.mother_plants ? (
+                  <Text style={s.stepQty}>{num(st.mother_plants)}</Text>
+                ) : null}
+              </View>
+            </View>
+          ))}
+        </Card>
       ) : null}
 
       {chosen ? (
@@ -153,6 +189,33 @@ function Row({ label, value, warn }: { label: string; value: string; warn?: bool
 }
 
 const s = StyleSheet.create({
+  step: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 5,
+    backgroundColor: colors.border,
+  },
+  dotDone: { backgroundColor: colors.leaf },
+  stepTitle: { fontFamily: fontFamily.medium, fontSize: fontSize.sm, color: colors.text },
+  stepDone: { color: colors.textSecondary },
+  stepNote: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  stepWeek: { fontFamily: fontFamily.medium, fontSize: fontSize.xs, color: colors.text },
+  stepDate: { fontFamily: fontFamily.regular, fontSize: fontSize.xs, color: colors.textMuted },
+  stepQty: { fontFamily: fontFamily.regular, fontSize: fontSize.xs, color: colors.textSecondary },
   plan: { fontFamily: fontFamily.medium, fontSize: fontSize.xs, color: colors.textMuted, marginBottom: spacing.md },
   none: { fontFamily: fontFamily.regular, fontSize: fontSize.sm, color: colors.textSecondary, lineHeight: 19 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, paddingVertical: 3 },
