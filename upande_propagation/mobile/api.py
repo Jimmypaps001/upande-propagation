@@ -388,10 +388,11 @@ def suppliers(search=None, limit=50):
 
 
 @frappe.whitelist()
-def warehouses(search=None, units_only=0, limit=50):
-	"""Where plants can be received, or benched."""
+def warehouses(search=None, units_only=0, limit=50, unit=None, company=None):
+	"""Where plants can be received, or benched -- in this unit's company."""
 	_guard()
-	return _ops.warehouses(search=search, units_only=units_only, limit=limit)
+	return _ops.warehouses(search=search, units_only=units_only, limit=limit,
+	                       unit=unit, company=company)
 
 
 @frappe.whitelist()
@@ -404,11 +405,12 @@ def next_consignment_code(arrival_date=None):
 # -------------------------------------------------------------------- arrivals
 @frappe.whitelist()
 def consignments(status=None, variety=None, supplier=None, from_date=None,
-                 to_date=None, limit=60):
-	"""The arrivals history, newest first."""
+                 to_date=None, limit=60, unit=None, company=None):
+	"""The arrivals history for this unit's company, newest first."""
 	_guard()
 	return _ops.consignments(status=status, variety=variety, supplier=supplier,
-	                         from_date=from_date, to_date=to_date, limit=limit)
+	                         from_date=from_date, to_date=to_date, limit=limit,
+	                         unit=unit, company=company)
 
 
 @frappe.whitelist()
@@ -423,7 +425,8 @@ def new_consignment(supplier, variety, qty_received, arrival_date=None,
                     form="Tissue Culture", warehouse=None,
                     rejected_warehouse=None, rate=0,
                     supplier_delivery_note=None, uom=None,
-                    propagation_plan=None, notes=None, company=None, submit=1):
+                    propagation_plan=None, notes=None, company=None,
+                    unit=None, submit=1):
 	"""Record an arrival. It gets its consignment number here."""
 	_guard()
 	return _ops.new_consignment(
@@ -432,7 +435,7 @@ def new_consignment(supplier, variety, qty_received, arrival_date=None,
 		rejected_warehouse=rejected_warehouse, rate=rate,
 		supplier_delivery_note=supplier_delivery_note, uom=uom,
 		propagation_plan=propagation_plan, notes=notes, company=company,
-		submit=submit)
+		unit=unit, submit=submit)
 
 
 @frappe.whitelist()
@@ -480,10 +483,10 @@ def record_mortality(batches, qty, log_date=None, observations=None):
 
 # --------------------------------------------------------------------- dispatch
 @frappe.whitelist()
-def dispatch_targets(farm=None):
+def dispatch_targets(farm=None, unit=None, company=None):
 	"""The farms, greenhouses and open requests a dispatch can go to."""
 	_guard()
-	return _ops.dispatch_targets(farm=farm)
+	return _ops.dispatch_targets(farm=farm, unit=unit, company=company)
 
 
 @frappe.whitelist()
@@ -503,8 +506,9 @@ def dispatch_batch(propagation_batch, qty_dispatched, target_greenhouse=None,
 
 # ---------------------------------------------------------------------- reports
 @frappe.whitelist()
-def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None):
-	"""Consignments in, plants standing, seedlings out."""
+def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None,
+            company=None):
+	"""Consignments in, plants standing, seedlings out -- this company's."""
 	_guard()
 	return _ops.reports(from_date=from_date, to_date=to_date, variety=variety,
-	                    farm=farm, unit=unit)
+	                    farm=farm, unit=unit, company=company)

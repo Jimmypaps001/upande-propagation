@@ -303,10 +303,16 @@ def main():
 			se.items[0].t_warehouse)
 
 	# ------------------------------------------------------------------- reports
-	rep = ops.reports(from_date=add_days(today(), -7))
+	# Scoped to the unit, exactly as the app calls it. Unscoped, this fell back
+	# to the session user's default company -- which on this site is a
+	# different company from the one the chain just wrote to, so "the arrival
+	# is in the report" passed by counting somebody else's delivery.
+	rep = ops.reports(from_date=add_days(today(), -7), unit=unit)
 	print("reports:", rep["arrivals"]["consignments"], "arrivals /",
 		rep["stock"]["on_hand"], "on hand /", rep["dispatches"]["plants"], "out")
-	check("the arrival is in the report", rep["arrivals"]["consignments"] >= 1)
+	check("the arrival is in the report",
+		any(r.get("name") == cname for r in rep["arrivals"].get("rows", [])),
+		cname)
 	check("received and accepted are both counted",
 		rep["arrivals"]["received"] >= 1000 and rep["arrivals"]["accepted"] >= 900,
 		(rep["arrivals"]["received"], rep["arrivals"]["accepted"]))

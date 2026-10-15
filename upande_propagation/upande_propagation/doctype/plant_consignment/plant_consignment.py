@@ -149,6 +149,16 @@ class PlantConsignment(Document):
 				frappe.throw(_("{0} does not belong to {1}.").format(
 					frappe.bold(wh), frappe.bold(self.company)))
 
+	def warehouse_company_error(self, field, warehouse):
+		"""The message validate_warehouses would have given, reusable off-save."""
+		owner = frappe.db.get_value("Warehouse", warehouse, "company")
+		if owner and self.company and owner != self.company:
+			return _("{0} belongs to {1}, but this delivery is {2}'s. Pick a "
+			         "warehouse on {2}'s books.").format(
+				frappe.bold(warehouse), frappe.bold(owner),
+				frappe.bold(self.company))
+		return None
+
 	def needs_check(self):
 		return cint(frappe.get_cached_value(
 			"Item", self.variety, "inspection_required_before_purchase"))
@@ -215,6 +225,13 @@ def check_sheet(consignment):
 	}
 
 
+def _check_company(doc, field, warehouse):
+	"""Refuse a wrong-company warehouse before it reaches the ledger."""
+	message = doc.warehouse_company_error(field, warehouse)
+	if message:
+		frappe.throw(message)
+
+
 @frappe.whitelist()
 def accept(consignment, accepted, rejected=0, readings=None, reason=None,
            rejected_warehouse=None, supplier_delivery_note=None):
@@ -258,6 +275,13 @@ def accept(consignment, accepted, rejected=0, readings=None, reason=None,
 		readings = frappe.parse_json(readings or "[]")
 
 	if rejected_warehouse:
+		# db_set writes straight past validate(), and on a submitted document
+		# validate() never runs again anyway -- so the company check that
+		# guards this field on save does not guard it here. Without this, a
+		# warehouse belonging to another company goes onto the Purchase
+		# Receipt, ERPNext refuses the submit, and the delivery is Held for a
+		# reason the operator cannot see or fix.
+		_check_company(doc, "rejected_warehouse", rejected_warehouse)
 		doc.db_set("rejected_warehouse", rejected_warehouse, update_modified=False)
 	if supplier_delivery_note:
 		doc.db_set("supplier_delivery_note", supplier_delivery_note,

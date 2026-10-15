@@ -95,10 +95,41 @@ def suppliers(search=None, limit=50):
 	return rows
 
 
-def warehouses(search=None, units_only=0, limit=50):
-	"""Where plants can be received, or benched."""
+def company_of(unit=None):
+	"""The company this phone is recording for.
+
+	A propagation unit is a Warehouse and a Warehouse belongs to exactly one
+	company, so the unit the phone was set up with already answers this. There
+	is deliberately no separate company picker: two things that must agree are
+	two things that can disagree, and the one the operator actually chose --
+	the shed they are standing in -- is the one to trust.
+
+	Falls back to the user default only when no unit is known, which is the
+	moment before setup has finished.
+	"""
+	if unit:
+		company = frappe.db.get_value("Warehouse", unit, "company")
+		if company:
+			return company
+	return frappe.defaults.get_user_default("Company")
+
+
+def warehouses(search=None, units_only=0, limit=50, unit=None, company=None):
+	"""Where plants can be received, or benched -- in this company only.
+
+	Scoped because the alternative was offering all 559 warehouses on this
+	site across eight companies, capped at 50 and sorted by name, so that
+	`A1 - KL` sat near the top of a Kaitet Group operator's list. Picking it
+	wrote a Purchase Receipt ERPNext was always going to refuse, and the
+	delivery was Held for a reason the operator could do nothing about. A
+	picker that offers what the server will reject is the bug; the rejection
+	is only where it surfaces.
+	"""
 	_guard()
 	filters = {"is_group": 0, "disabled": 0}
+	company = company or company_of(unit)
+	if company:
+		filters["company"] = company
 	if cint(units_only):
 		filters["custom_prop_is_unit"] = 1
 	if search:
@@ -124,10 +155,18 @@ def next_consignment_code(arrival_date=None):
 
 # ---------------------------------------------------------------------- arrivals
 def consignments(status=None, variety=None, supplier=None, from_date=None,
-                 to_date=None, limit=60):
-	"""The arrivals history -- what the arrivals screen opens on."""
+                 to_date=None, limit=60, unit=None, company=None):
+	"""The arrivals history -- what the arrivals screen opens on.
+
+	This company's arrivals. A unit that can see another company's deliveries
+	can open one, check it, and receive it onto a ledger it has no business
+	touching.
+	"""
 	_guard("Plant Consignment")
 	filters = {"docstatus": ["<", 2]}
+	company = company or company_of(unit)
+	if company:
+		filters["company"] = company
 	if status:
 		filters["status"] = status
 	if variety:
@@ -214,7 +253,7 @@ def new_consignment(supplier, variety, qty_received, arrival_date=None,
                     form="Tissue Culture", warehouse=None, rejected_warehouse=None,
                     rate=0, supplier_delivery_note=None, uom=None,
                     propagation_plan=None, notes=None, company=None,
-                    submit=1):
+                    unit=None, submit=1):
 	"""Write down a delivery. Supplier, variety, quantity -- and it has a number.
 
 	Submitted by default: an arrival that sits in draft is one the unit has to
@@ -235,7 +274,11 @@ def new_consignment(supplier, variety, qty_received, arrival_date=None,
 	doc.supplier_delivery_note = supplier_delivery_note
 	doc.propagation_plan = propagation_plan
 	doc.notes = notes
-	doc.company = company
+	# The shed the phone is standing in decides the company, not whatever
+	# company this user happens to default to on the desk. A unit recording
+	# for Kaitet Group must not write a Karen Roses receipt because someone
+	# set a user default years ago.
+	doc.company = company or company_of(unit)
 	doc.insert()
 	if cint(submit):
 		doc.submit()
@@ -372,14 +415,23 @@ def record_mortality(batches, qty, log_date=None, observations=None):
 
 
 # --------------------------------------------------------------------- dispatch
-def dispatch_targets(farm=None):
+def dispatch_targets(farm=None, unit=None, company=None):
 	"""Where seedlings can go: our farms, and the greenhouses on them."""
 	_guard("Seedling Dispatch")
-	farms = frappe.get_all("Farm", filters={"disabled": 0},
+	# Plants move between warehouses of one company. A greenhouse on another
+	# company's books is not somewhere this unit can send a lorry, and the
+	# Stock Entry would refuse it on submit.
+	company = company or company_of(unit)
+	farm_filters = {"disabled": 0}
+	house_filters = {"is_group": 0, "disabled": 0}
+	if company:
+		farm_filters["company"] = company
+		house_filters["company"] = company
+	farms = frappe.get_all("Farm", filters=farm_filters,
 	                       fields=["name", "farm_name", "company"],
 	                       order_by="farm_name asc")
 	houses = frappe.get_all(
-		"Warehouse", filters={"is_group": 0, "disabled": 0},
+		"Warehouse", filters=house_filters,
 		fields=["name", "warehouse_name", "company"], order_by="name asc",
 		limit=500)
 	requests = frappe.get_all(
@@ -422,7 +474,8 @@ def dispatch_batch(propagation_batch, qty_dispatched, target_greenhouse=None,
 
 
 # ---------------------------------------------------------------------- reports
-def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None):
+def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None,
+            company=None):
 	"""Consignments in, plants standing, seedlings out -- over one window.
 
 	Three questions a unit manager is asked every week, answered off the same
@@ -434,11 +487,15 @@ def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None):
 	to_date = getdate(to_date or today())
 	from_date = getdate(from_date or add_days(to_date, -90))
 
+	company = company or company_of(unit)
+
 	# --- what came in
 	cfilters = {"docstatus": 1,
 	            "arrival_date": ["between", [from_date, to_date]]}
 	if variety:
 		cfilters["variety"] = variety
+	if company:
+		cfilters["company"] = company
 	arrivals = frappe.get_all(
 		"Plant Consignment", filters=cfilters,
 		fields=["name", "consignment", "arrival_date", "supplier", "variety",
@@ -468,6 +525,8 @@ def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None):
 
 	# --- what is standing
 	bfilters = {"docstatus": 1, "current_stage": ["!=", COMPLETED]}
+	if company:
+		bfilters["company"] = company
 	if variety:
 		bfilters["variety"] = variety
 	if unit:
@@ -504,6 +563,8 @@ def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None):
 		dfilters["variety"] = variety
 	if farm:
 		dfilters["farm"] = farm
+	if company:
+		dfilters["company"] = company
 	dispatches = frappe.get_all(
 		"Seedling Dispatch", filters=dfilters,
 		fields=["name", "dispatch_date", "propagation_batch", "variety",

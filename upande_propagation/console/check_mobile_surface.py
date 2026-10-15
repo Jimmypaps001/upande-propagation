@@ -128,6 +128,68 @@ def main():
 		_ok("operations.%s is not exposed twice" % inner_name,
 			getattr(ops, inner_name) not in frappe.whitelisted)
 
+	# ------------------------------------------------------- company scoping
+	# One phone sits in one unit; a unit is a Warehouse; a Warehouse belongs to
+	# one company. Every list the app shows must be inside that company, or an
+	# operator is offered something the server will refuse -- which is how
+	# PC-2026-42-05 came to be Held against `A1 - KL`, a Kaitet Ltd. warehouse
+	# picked by a Kaitet Group unit.
+	units = frappe.get_all("Warehouse", filters={"custom_prop_is_unit": 1, "disabled": 0},
+	                       fields=["name", "company"])
+	_ok("there is a propagation unit to scope by", bool(units), str(len(units)))
+
+	site_wide = frappe.get_all("Warehouse", filters={"is_group": 0, "disabled": 0},
+	                           pluck="company")
+	_ok("this site really is multi-company (so scoping matters)",
+	    len(set(site_wide)) > 1, "%d companies" % len(set(site_wide)))
+
+	for u in units:
+		rows = ops.warehouses(unit=u.name, limit=1000)
+		got = {r["company"] for r in rows}
+		_ok("warehouses for %s are its company only" % u.name,
+		    got <= {u.company}, ", ".join(sorted(got - {u.company})) or "clean")
+		_ok("warehouses for %s are not the whole site" % u.name,
+		    len(rows) < len(site_wide), "%d of %d" % (len(rows), len(site_wide)))
+
+		d = ops.dispatch_targets(unit=u.name)
+		fc = {f["company"] for f in d["farms"]}
+		gc = {g["company"] for g in d["greenhouses"]}
+		_ok("dispatch farms for %s are its company only" % u.name, fc <= {u.company},
+		    ", ".join(sorted(fc - {u.company})) or "clean")
+		_ok("dispatch greenhouses for %s are its company only" % u.name,
+		    gc <= {u.company}, ", ".join(sorted(gc - {u.company})) or "clean")
+
+		seen = {frappe.db.get_value("Plant Consignment", r["name"], "company")
+		        for r in ops.consignments(unit=u.name, limit=500)}
+		_ok("arrivals for %s are its company only" % u.name, seen <= {u.company},
+		    ", ".join(sorted(x for x in seen - {u.company} if x)) or "clean")
+
+	# The company must come from the unit, not from whoever is logged in.
+	_ok("company_of prefers the unit over the user default",
+	    all(ops.company_of(u.name) == u.company for u in units))
+
+	# And the off-save write path must be guarded, because db_set walks past
+	# validate() and validate() does not run again after submit.
+	pc = frappe.get_module(
+		"upande_propagation.upande_propagation.doctype.plant_consignment.plant_consignment")
+	_ok("accept() has a company guard to call", hasattr(pc, "_check_company"))
+	held = frappe.get_all("Plant Consignment",
+	                      filters={"docstatus": 1}, fields=["name", "company"], limit=1)
+	if held:
+		doc = frappe.get_doc("Plant Consignment", held[0]["name"])
+		wrong = frappe.get_all(
+			"Warehouse", filters={"is_group": 0, "disabled": 0,
+			                      "company": ["!=", doc.company]}, limit=1)
+		if wrong:
+			_ok("a wrong-company warehouse is named and refused",
+			    bool(doc.warehouse_company_error("rejected_warehouse", wrong[0].name)))
+			right = frappe.get_all(
+				"Warehouse", filters={"is_group": 0, "disabled": 0,
+				                      "company": doc.company}, limit=1)
+			if right:
+				_ok("a right-company warehouse is allowed",
+				    doc.warehouse_company_error("rejected_warehouse", right[0].name) is None)
+
 	for name, detail in PASS:
 		print("  ok   %s%s" % (name, (" -- " + detail) if detail else ""))
 	for name, detail in FAIL:
