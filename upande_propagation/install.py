@@ -31,8 +31,11 @@ def after_migrate():
 def setup():
 	"""Idempotent: seeds only what is missing, refreshes what is shipped."""
 	seed_propagation_settings.execute()
-	seed_arrival_defaults.execute()
+	# Fields first. seed_arrival_defaults reads custom_prop_is_unit off
+	# Warehouse, so creating it afterwards left the default unfillable on a
+	# fresh site and brought the whole migrate down on the site it ran against.
 	add_propagation_unit_fields.execute()
+	seed_arrival_defaults.execute()
 	create_propagation_dashboard_page.execute()
 	sync_dashboard()
 

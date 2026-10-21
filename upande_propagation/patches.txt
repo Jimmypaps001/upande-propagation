@@ -8,4 +8,6 @@ upande_propagation.patches.v1_0.seed_propagation_settings
 upande_propagation.patches.v1_0.backfill_harvest_datetime
 upande_propagation.patches.v1_0.recalculate_propagation_totals
 upande_propagation.patches.v1_0.create_propagation_dashboard_page
+# The Warehouse custom fields have to exist before anything queries them.
+upande_propagation.patches.v1_0.add_propagation_unit_fields
 upande_propagation.patches.v1_0.seed_arrival_defaults

@@ -30,7 +30,14 @@ def execute():
 		settings.dispatch_stock_entry_type = "Material Transfer"
 		changed = True
 
-	if not settings.get("default_receipt_warehouse"):
+	# The field is installed by add_propagation_unit_fields, which now runs
+	# first -- but an older site can reach this patch without it, and a
+	# convenience default is not worth bringing a migrate down for. Every
+	# doctype change in the run is rolled back when a patch raises, so this
+	# one line stopped an entire release from landing.
+	has_unit_flag = frappe.db.has_column("Warehouse", "custom_prop_is_unit")
+
+	if not settings.get("default_receipt_warehouse") and has_unit_flag:
 		# The unit a batch is actually raised in is the honest default. Fall back
 		# to nothing rather than to a company default: a plant delivery landing
 		# in "Stores" is a delivery nobody in the nursery can find.
