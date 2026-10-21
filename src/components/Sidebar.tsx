@@ -32,6 +32,7 @@ const BENCH: { href: Href; label: string; icon: IconName }[] = [
 const PLAN: { href: Href; label: string; icon: IconName }[] = [
   { href: '/plans', label: 'Plans', icon: 'calendar-outline' },
   { href: '/deliveries', label: 'To the farms', icon: 'bus-outline' },
+  { href: '/farm-plan', label: 'Farm plan', icon: 'home-outline' },
   { href: '/reports', label: 'Reports', icon: 'stats-chart-outline' },
   { href: '/protocol', label: 'Protocol', icon: 'document-text-outline' },
   { href: '/motherstock', label: 'Motherstock', icon: 'git-branch-outline' },

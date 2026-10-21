@@ -506,3 +506,85 @@ export function motherstockPlan(opts: {
     propagation_plan: opts.propagation_plan,
   }));
 }
+
+// --------------------------------------------------------- the farm's view
+//
+// The same plan read from the other end. A unit asks what it owes; a farm asks
+// what is coming, when, and from whom -- and a week that is 90% bought in is a
+// different conversation, with a different person, from one that is ours.
+
+export interface FarmPlanSource {
+  name: string;
+  plants: number;
+  /** How this lot reaches the farm. A trough lift is a measured date and
+   *  quantity; an allocated share is a season total spread evenly over the
+   *  plan's weeks, which is a guess at the shape of the season. */
+  kind: 'trough lift' | 'bought in' | 'allocated share';
+}
+
+export interface FarmPlanWeek {
+  week: string;
+  deliver_on: string;
+  plants: number;
+  varieties: string[];
+  /** True when this week came from the real trough calendar rather than from
+   *  a share spread evenly across the season. */
+  from_calendar: boolean;
+  sources: FarmPlanSource[];
+}
+
+/** One trough's lift landing on the farm. */
+export interface FarmPlanLot {
+  ready_on: string;
+  plants: number;
+  lift_no: number;
+  trough: string;
+  planted_on: string;
+  /** What went into the trough -- a trough is planted full, so this is the
+   *  minimum planting, not the quantity the week asked for. */
+  trough_lot: number;
+  unit: string;
+  variety: string;
+}
+
+export interface FarmPlan {
+  farm: string;
+  from_date?: string;
+  to_date?: string;
+  weeks: FarmPlanWeek[];
+  own_units: string[];
+  totals: {
+    plants: number;
+    weeks: number;
+    from_own_units: number;
+    from_troughs?: number;
+    bought_in?: number;
+    /** What the plan asked for. */
+    demand?: number;
+    /** What the troughs make it, over and above the demand, because a trough
+     *  is planted full or not at all. Real plants the farm must find ground for. */
+    surplus?: number;
+  };
+  varieties: string[];
+  lots?: FarmPlanLot[];
+  calendar_weeks?: number;
+  plans_on_calendar?: string[];
+  reason?: string | null;
+}
+
+/** What a farm expects to receive, week by week, and who raises each lot. */
+export function farmPlan(opts: {
+  farm: string;
+  variety?: string;
+  from_date?: string;
+  weeks?: number;
+  include_past?: boolean;
+}): Promise<FarmPlan> {
+  return get<FarmPlan>('farm_plan', dropEmpty({
+    farm: opts.farm,
+    variety: opts.variety,
+    from_date: opts.from_date,
+    weeks: opts.weeks != null ? String(opts.weeks) : undefined,
+    include_past: opts.include_past ? '1' : undefined,
+  }));
+}
