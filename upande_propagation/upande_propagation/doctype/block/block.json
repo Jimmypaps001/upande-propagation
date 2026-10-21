@@ -17,7 +17,25 @@
   "total_variety_area",
   "plant_count",
   "planting_date",
-  "custom_active"
+  "custom_active",
+  "geometry_section",
+  "area_planted",
+  "varieties",
+  "cb_geom",
+  "number_of_plants",
+  "number_of_beds",
+  "plants_per_sqm",
+  "varieties_grown_section",
+  "varieties_grown",
+  "bedconfig_section",
+  "bed_range",
+  "individual_beds_section",
+  "individual_beds",
+  "replanting_tab",
+  "last_replanting_date",
+  "replanting_logs",
+  "uprooting_tab",
+  "uprooting_logs"
  ],
  "fields": [
   {
@@ -81,6 +99,109 @@
    "fieldname": "custom_active",
    "fieldtype": "Check",
    "label": "Active"
+  },
+  {
+   "fieldname": "geometry_section",
+   "fieldtype": "Section Break",
+   "label": "Block Geometry"
+  },
+  {
+   "fieldname": "area_planted",
+   "fieldtype": "Float",
+   "label": "Area Planted (m2)"
+  },
+  {
+   "fieldname": "varieties",
+   "fieldtype": "Int",
+   "label": "Varieties",
+   "read_only": 1,
+   "description": "How many distinct varieties stand in this block. Counted from the rows below."
+  },
+  {
+   "fieldname": "cb_geom",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "number_of_plants",
+   "fieldtype": "Int",
+   "label": "Number of Plants",
+   "read_only": 1,
+   "description": "Rolled up from the individual beds."
+  },
+  {
+   "fieldname": "number_of_beds",
+   "fieldtype": "Int",
+   "label": "Number of Beds",
+   "read_only": 1,
+   "description": "Occupied beds, rolled up from the individual beds."
+  },
+  {
+   "fieldname": "plants_per_sqm",
+   "fieldtype": "Float",
+   "label": "Plants Per Sqm"
+  },
+  {
+   "fieldname": "varieties_grown_section",
+   "fieldtype": "Section Break",
+   "label": "Varieties Grown"
+  },
+  {
+   "fieldname": "varieties_grown",
+   "fieldtype": "Table",
+   "options": "Greenhouse Variety",
+   "label": "Varieties Grown",
+   "description": "A block holds more than one variety. The single Variety field above is what it was planted as; this is what is standing."
+  },
+  {
+   "fieldname": "bedconfig_section",
+   "fieldtype": "Section Break",
+   "label": "Bed Configuration"
+  },
+  {
+   "fieldname": "bed_range",
+   "fieldtype": "Table",
+   "options": "Greenhouse Bed Range",
+   "label": "Bed Ranges",
+   "description": "Beds 1-20 of this variety, 21-40 of that. The same table the greenhouse uses."
+  },
+  {
+   "fieldname": "individual_beds_section",
+   "fieldtype": "Section Break",
+   "label": "Individual Bed Tracking"
+  },
+  {
+   "fieldname": "individual_beds",
+   "fieldtype": "Table",
+   "options": "Greenhouse Bed",
+   "label": "Individual Beds",
+   "description": "Bed by bed, with its own plant count, dates and where its plants came from."
+  },
+  {
+   "fieldname": "replanting_tab",
+   "fieldtype": "Tab Break",
+   "label": "Replanting"
+  },
+  {
+   "fieldname": "last_replanting_date",
+   "fieldtype": "Date",
+   "label": "Last Replanting Date"
+  },
+  {
+   "fieldname": "replanting_logs",
+   "fieldtype": "Table",
+   "options": "Greenhouse Replanting Log",
+   "label": "Replanting Logs"
+  },
+  {
+   "fieldname": "uprooting_tab",
+   "fieldtype": "Tab Break",
+   "label": "Uprooting"
+  },
+  {
+   "fieldname": "uprooting_logs",
+   "fieldtype": "Table",
+   "options": "Greenhouse Uprooting Log",
+   "label": "Uprooting Logs"
   }
  ],
  "grid_page_length": 50,

@@ -288,7 +288,7 @@ def accept(consignment, accepted, rejected=0, readings=None, reason=None,
 		           update_modified=False)
 		doc.supplier_delivery_note = supplier_delivery_note
 
-	_clear_stale(doc)
+	_clear_stale(doc, accepted, rejected)
 	_store_readings(doc, readings)
 
 	if accepted <= 0:
@@ -309,7 +309,7 @@ def accept(consignment, accepted, rejected=0, readings=None, reason=None,
 		        "failed": [], "message": _("The whole delivery was turned away. "
 		                                   "Nothing was received onto the ledger.")}
 
-	receipt = _make_receipt(doc, accepted, rejected, reason)
+	receipt = _reuse_or_make_receipt(doc, accepted, rejected, reason)
 	# An item nobody asks an inspection of gets none. Raising an empty one to
 	# keep the shape tidy would put a rubber stamp in the quality record.
 	qi = _make_inspection(doc, receipt, readings, reason) if doc.needs_check() else None
@@ -378,18 +378,28 @@ def accept(consignment, accepted, rejected=0, readings=None, reason=None,
 	}
 
 
-def _clear_stale(doc):
+def _clear_stale(doc, accepted=None, rejected=None):
 	"""Drop the paperwork a previous attempt at this check left as a draft.
 
 	Re-checking is the ordinary case -- a reading is mistyped, or a count is
 	recounted -- and leaving the first attempt's draft receipt behind would give
 	the office two receipts for one lorry.
+
+	With one exception, and it is the reason a Held delivery can be released at
+	all. A site rule can refuse the goods receipt until the supplier's delivery
+	note is attached to it. The unit attaches the note TO THAT DRAFT and checks
+	the delivery in again -- so deleting the draft threw away the only thing
+	that had changed, the new receipt was empty too, and the delivery was held
+	forever with no sequence of actions that freed it. A draft carrying
+	attachments, for the same quantities, is kept.
 	"""
 	receipt = doc.get("purchase_receipt")
 	if not receipt or not frappe.db.exists("Purchase Receipt", receipt):
 		return
 	if cint(frappe.db.get_value("Purchase Receipt", receipt, "docstatus")) != 0:
 		# It went through. There is nothing stale about it.
+		return
+	if accepted is not None and _receipt_is_answerable(receipt, accepted, rejected):
 		return
 
 	qi = doc.get("quality_inspection")
@@ -435,6 +445,98 @@ def _store_readings(doc, readings):
 	doc.save(ignore_permissions=True)
 
 
+def _receipt_is_answerable(receipt, accepted, rejected):
+	"""Does this held draft now carry what it was refused for, for these counts?
+
+	Attachments are the only thing a unit can add to a held receipt, and the
+	quantities have to still describe the same delivery -- a recount makes the
+	old draft, and whatever is attached to it, a statement about something else.
+	"""
+	row = frappe.db.get_value("Purchase Receipt Item", {"parent": receipt},
+	                          ["qty", "rejected_qty"], as_dict=True)
+	if not row:
+		return False
+	if cint(row.qty) != cint(accepted) or cint(row.rejected_qty) != cint(rejected or 0):
+		return False
+	return bool(frappe.get_all("File", limit=1, filters={
+		"attached_to_doctype": "Purchase Receipt", "attached_to_name": receipt}))
+
+
+def _reuse_or_make_receipt(doc, accepted, rejected, reason):
+	"""The receipt this check should submit -- the held one, if there is one.
+
+	A site rule can refuse the goods receipt (karenroses will not submit one
+	without the supplier's delivery note attached). The delivery is then Held
+	and the draft receipt is kept, because that is the document the unit has to
+	attach the paperwork to.
+
+	Making a fresh receipt on the next check threw that attachment away: the
+	unit attached the note to the held receipt, checked the delivery in again,
+	and the brand-new receipt had nothing attached to it either. There was no
+	sequence of actions that released a Held delivery. So a draft receipt
+	already raised for this consignment is reused, and only a change in what
+	was accepted or rejected makes a new one.
+	"""
+	existing = doc.get("purchase_receipt")
+	if existing and frappe.db.exists("Purchase Receipt", existing):
+		pr = frappe.get_doc("Purchase Receipt", existing)
+		if pr.docstatus == 0:
+			row = pr.items[0] if pr.items else None
+			same = (row is not None
+			        and cint(row.qty) == cint(accepted)
+			        and cint(row.get("rejected_qty")) == cint(rejected))
+			if same:
+				return pr
+			# The numbers moved, so the old draft is wrong and whatever is
+			# attached to it describes a different delivery. It goes, and the
+			# caller is told the paperwork has to go on the new one.
+			frappe.delete_doc("Purchase Receipt", pr.name, force=1,
+			                  ignore_permissions=True, delete_permanently=True)
+	return _make_receipt(doc, accepted, rejected, reason)
+
+
+def _receipt_item(doc):
+	"""The item a delivery is booked against. Roots are not plants.
+
+	A root is bought, stored for a year, planted and lifted; what comes off it
+	is a plant. Booking both against the one item makes 7,000 roots read as
+	7,000 standing plants, and it breaks the only join there is between a
+	goods receipt and a propagation plan -- the plan reads its receipts off the
+	stock ledger by item code, so a receipt on the wrong item is a receipt the
+	plan never sees.
+
+	The site already keeps a separate "<variety> Roots" item for every variety
+	that is bought that way, and the protocol's material route names it. Where
+	neither exists the variety stands, because inventing an item here would put
+	a stock record against something nobody buys.
+	"""
+	form = (doc.get("form") or "").strip()
+	if form != "Roots":
+		return doc.variety
+
+	# The protocol is the authority on which item a stage is bought as. Read
+	# through the plan when the delivery names one -- defensively, because
+	# propagation does not require the summer flower app to be installed.
+	plan = doc.get("propagation_plan")
+	if plan:
+		try:
+			version = frappe.db.get_value(
+				"Summer Flower Propagation Plan", plan, "protocol")
+			if version:
+				item = frappe.db.get_value("Crop Material Stage",
+				                           {"parent": version, "stage": "Roots"},
+				                           "item")
+				if item and frappe.db.exists("Item", item):
+					return item
+		except Exception:
+			frappe.clear_last_message()
+
+	convention = "%s Roots" % doc.variety
+	if frappe.db.exists("Item", convention):
+		return convention
+	return doc.variety
+
+
 def _make_receipt(doc, accepted, rejected, reason):
 	"""A Purchase Receipt with no purchase order behind it.
 
@@ -451,12 +553,15 @@ def _make_receipt(doc, accepted, rejected, reason):
 	pr.set_posting_time = 1
 	pr.supplier_delivery_note = (doc.supplier_delivery_note
 	                             or _("Consignment {0}").format(doc.consignment))
+	item = _receipt_item(doc)
 	row = pr.append("items", {
-		"item_code": doc.variety,
+		"item_code": item,
 		"qty": accepted,
 		"rejected_qty": rejected,
 		"received_qty": accepted + rejected,
-		"uom": doc.uom or frappe.get_cached_value("Item", doc.variety, "stock_uom"),
+		# The UOM of the item actually being booked, not of the variety -- a
+		# roots item need not be stocked in the same unit as the plant.
+		"uom": doc.uom or frappe.get_cached_value("Item", item, "stock_uom"),
 		"rate": flt(doc.rate),
 		"warehouse": doc.warehouse,
 	})
@@ -522,7 +627,10 @@ def _make_inspection(doc, receipt, readings, reason):
 	qi.inspection_type = "Incoming"
 	qi.reference_type = "Purchase Receipt"
 	qi.reference_name = receipt.name
-	qi.item_code = doc.variety
+	# The same item the receipt books, or ERPNext refuses to match the
+	# inspection to the receipt line and the delivery is held on a message
+	# about an item nobody chose.
+	qi.item_code = _receipt_item(doc)
 	qi.sample_size = min(cint(doc.qty_received), 100) or 1
 	qi.report_date = getdate(doc.arrival_date)
 	qi.inspected_by = frappe.session.user

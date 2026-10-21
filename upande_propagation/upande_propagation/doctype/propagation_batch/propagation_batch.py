@@ -326,6 +326,15 @@ def recalculate_batch(batch_name, update_seedling_request=True):
 		)
 	)
 
+	# Material that was BOUGHT arrives on a Plant Consignment, not on a Budwood
+	# Harvest -- nobody cut it off a mother block here. Counting only harvested
+	# stems left every bought-in batch at zero survived and zero available, so
+	# roots and plantlets could be received, receipted and benched and then
+	# never dispatched to the farm: the whole bought-in route dead-ended at the
+	# bench. What the consignment put on the bench is material received.
+	if not received and batch.plant_consignment:
+		received = cint(batch.total_cuttings_planned)
+
 	logs = frappe.get_all(
 		"Daily Propagation Log",
 		filters={"propagation_batch": batch_name},
