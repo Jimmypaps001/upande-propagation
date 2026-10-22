@@ -219,6 +219,7 @@ def schedule(unit, version, form, weeks):
 	        "surplus": max(0, planted - (wanted_total - short))}
 
 
+@frappe.whitelist()
 def deliveries(unit, version, form, weeks):
 	"""What actually leaves a unit, week by week, for a season's plantings.
 
@@ -232,6 +233,8 @@ def deliveries(unit, version, form, weeks):
 	different dates. Reporting demand back as though it were delivery is what
 	made a trough-bound plan look like a smooth one.
 	"""
+	if isinstance(weeks, str):
+		weeks = frappe.parse_json(weeks or "[]")
 	s = schedule(unit, version, form, weeks)
 	if s.get("reason"):
 		return {"rows": [], "by_week": {}, "planted": 0, "delivered": 0,
