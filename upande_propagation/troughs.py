@@ -30,6 +30,25 @@ def unit_troughs(unit, active_only=True):
 		order_by="plants_per_trough desc, trough_name asc")
 
 
+# The route names the stage a crop is bought at; the lift table names the form
+# that comes off a trough. They are the same thing said twice -- "TC" there,
+# "Tissue Culture" here -- and the two were joined on an exact string, so a
+# tissue culture planting could never find its own lifts. Every unit then
+# reported that it could not work out when a trough came free, and seated
+# nothing, for want of a word.
+_FORM_ALIAS = {
+	"tc": "Tissue Culture",
+	"tissue culture": "Tissue Culture",
+	"roots": "Roots",
+	"roots (own)": "Roots",
+}
+
+
+def canonical_form(name):
+	"""One spelling for a form, whichever table it was read from."""
+	return _FORM_ALIAS.get((name or "").strip().lower(), name)
+
+
 def hold_weeks(version, form):
 	"""How long a planting of this form holds a trough.
 
@@ -38,7 +57,8 @@ def hold_weeks(version, form):
 	was planted -- so it returns None and the caller must say it cannot place.
 	"""
 	v = frappe.get_doc("Crop Protocol Version", version) if isinstance(version, str) else version
-	lifts = [L for L in (v.lifts or []) if L.form == form]
+	want = canonical_form(form)
+	lifts = [L for L in (v.lifts or []) if canonical_form(L.form) == want]
 	if not lifts:
 		return None
 	last = max(cint(L.weeks_after_arrival) for L in lifts)
@@ -53,7 +73,8 @@ def lift_schedule(version, form, planted_on, planted_qty):
 	invents plants, and a trough that cannot add up is worse than an uneven one.
 	"""
 	v = frappe.get_doc("Crop Protocol Version", version) if isinstance(version, str) else version
-	lifts = sorted([L for L in (v.lifts or []) if L.form == form],
+	want = canonical_form(form)
+	lifts = sorted([L for L in (v.lifts or []) if canonical_form(L.form) == want],
 	               key=lambda L: cint(L.lift_no))
 	out, used = [], 0
 	for i, L in enumerate(lifts):
