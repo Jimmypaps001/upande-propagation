@@ -9,6 +9,7 @@
   "consignment",
   "arrival_date",
   "supplier",
+  "purchase_order",
   "supplier_delivery_note",
   "delivery_note_photo",
   "column_break_head",
@@ -73,6 +74,13 @@
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "label": "Purchase Order",
+   "options": "Purchase Order",
+   "description": "The order this delivery is against, e.g. an outside propagator's order for the plants it raised. The receipt is made against it and takes its rate."
   },
   {
    "fieldname": "supplier_delivery_note",
@@ -329,7 +337,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-15 09:00:00.000000",
+ "modified": "2026-10-28 18:30:00.000000",
  "modified_by": "Administrator",
  "module": "Upande Propagation",
  "name": "Plant Consignment",

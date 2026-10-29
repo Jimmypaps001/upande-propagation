@@ -565,6 +565,21 @@ def _make_receipt(doc, accepted, rejected, reason):
 		"rate": flt(doc.rate),
 		"warehouse": doc.warehouse,
 	})
+	# Delivered against an order -- an outside propagator's, for the plants it
+	# raised -- the receipt is made against that order line and at its rate, so the
+	# invoice is raised from the order and the propagator is paid what was agreed.
+	if doc.get("purchase_order"):
+		po_item = frappe.db.get_value(
+			"Purchase Order Item",
+			{"parent": doc.purchase_order, "item_code": item, "docstatus": 1},
+			["name", "rate", "uom"], as_dict=True)
+		if not po_item:
+			frappe.throw(_("{0} has no submitted line for {1}. Submit the order, or "
+			               "receive this delivery without it.").format(doc.purchase_order, item))
+		row.purchase_order = doc.purchase_order
+		row.purchase_order_item = po_item.name
+		row.rate = flt(po_item.rate)
+		row.uom = po_item.uom or row.uom
 	if rejected:
 		row.rejected_warehouse = doc.rejected_warehouse
 		if reason and frappe.db.has_column("Purchase Receipt Item",
