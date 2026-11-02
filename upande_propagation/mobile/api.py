@@ -512,3 +512,82 @@ def reports(from_date=None, to_date=None, variety=None, farm=None, unit=None,
 	_guard()
 	return _ops.reports(from_date=from_date, to_date=to_date, variety=variety,
 	                    farm=farm, unit=unit, company=company)
+
+
+# ---------------------------------------------------------------------- troughs
+# Setting a trough is the moment a plan becomes a fact, and it happens at the
+# bench with a phone rather than at a desk. These three are the whole of it:
+# what is free, put a crop in one, take a lift out.
+@frappe.whitelist()
+def free_troughs(unit, on_date=None):
+	"""Troughs standing empty in this unit, largest first, and what holds the rest."""
+	_guard()
+	from upande_propagation import troughs as _t
+
+	held = _t.settings_holding(unit, on_date)
+	free = _t.free_troughs(unit, on_date)
+	return {
+		"unit": unit,
+		"as_of": str(getdate(on_date) if on_date else today()),
+		"free": [{"trough": t.name, "name": t.trough_name,
+		          "plants_per_trough": cint(t.plants_per_trough)} for t in free],
+		"held": [{"trough": k, "setting": v["name"], "variety": v["variety"],
+		          "set_date": str(v["set_date"] or ""), "form": v["form"],
+		          "plants_remaining": cint(v["plants_remaining"]),
+		          "frees": str(v["freed_on"] or "")} for k, v in held.items()],
+	}
+
+
+@frappe.whitelist()
+def set_trough(trough, variety, form, plants, set_date=None, units=None,
+               propagation_batch=None, crop_protocol_version=None,
+               production_plan=None, notes=None, submit=1):
+	"""Record a trough being filled. Refuses an occupied or over-filled trough."""
+	_guard()
+	doc = frappe.get_doc({
+		"doctype": "Trough Setting", "trough": trough, "variety": variety,
+		"form": form, "plants": cint(plants), "units": cint(units or 0),
+		"set_date": getdate(set_date) if set_date else today(),
+		"propagation_batch": propagation_batch,
+		"crop_protocol_version": crop_protocol_version,
+		"production_plan": production_plan, "notes": notes,
+	})
+	doc.insert()
+	if cint(submit):
+		doc.submit()
+	return {"setting": doc.name, "status": doc.status,
+	        "fill_pct": flt(doc.fill_pct),
+	        "lifts": [{"lift_no": r.lift_no, "due": str(r.due_date or ""),
+	                   "plants_due": cint(r.plants_due)} for r in doc.lifts]}
+
+
+@frappe.whitelist()
+def lift_trough(setting, lift_no, plants_taken, lift_date=None, destination=None,
+                notes=None, feed_plan=1):
+	"""Record a lift, and tell the production plan about it.
+
+	`feed_plan` writes the propagation actual the plan's variance engine reads,
+	so the number is typed once at the bench and nowhere else.
+	"""
+	_guard()
+	doc = frappe.get_doc("Trough Setting", setting)
+	row = next((r for r in doc.lifts if cint(r.lift_no) == cint(lift_no)), None)
+	if not row:
+		frappe.throw(_("{0} has no lift {1}.").format(setting, lift_no))
+	row.lift_date = getdate(lift_date) if lift_date else today()
+	row.plants_taken = cint(plants_taken)
+	if destination:
+		row.destination = destination
+	if notes:
+		row.notes = notes
+	doc.save()
+	fed = None
+	if cint(feed_plan):
+		from upande_summer_flowers.summer_flowers import trough_actuals
+
+		fed = trough_actuals.feed_actuals(doc.name)
+	return {"setting": doc.name, "status": doc.status,
+	        "lifted": cint(doc.plants_lifted),
+	        "remaining": cint(doc.plants_remaining),
+	        "frees": str(doc.freed_on or ""),
+	        "variance": cint(row.variance), "fed_to_plan": fed}

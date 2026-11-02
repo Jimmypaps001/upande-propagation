@@ -141,6 +141,43 @@ def place(unit, version, form, wanted, planted_on):
 	}
 
 
+def settings_holding(unit, on_date=None, exclude=None):
+	"""Troughs actually held right now, from the settings recorded against them.
+
+	Occupancy used to be worked out from the plantings a trough was ASSUMED to
+	serve, which answers what should be in a trough and never what is. A trough
+	set late, set short, or set with another crop entirely read the same as one
+	set exactly to plan. A Trough Setting is the record of what went in, so this
+	is a lookup rather than an inference.
+	"""
+	if not frappe.db.table_exists("Trough Setting"):
+		return {}
+	rows = frappe.get_all(
+		"Trough Setting",
+		filters={"propagation_unit": unit, "docstatus": ["<", 2],
+		         "status": ["in", ("Standing", "Partly Lifted")]},
+		fields=["name", "trough", "variety", "form", "set_date", "plants",
+		        "plants_remaining", "freed_on", "propagation_batch"])
+	when = getdate(on_date) if on_date else None
+	out = {}
+	for r in rows:
+		if exclude and r.name == exclude:
+			continue
+		# Held from the day it was set until its last lift is taken.
+		if when and r.set_date and getdate(r.set_date) > when:
+			continue
+		if when and r.freed_on and getdate(r.freed_on) <= when:
+			continue
+		out[r.trough] = r
+	return out
+
+
+def free_troughs(unit, on_date=None, exclude=None):
+	"""The troughs in this unit that nothing is standing in."""
+	held = settings_holding(unit, on_date, exclude)
+	return [t for t in unit_troughs(unit) if t.name not in held]
+
+
 def occupancy(unit, version, form, plantings):
 	"""Which troughs are busy when, given a list of (date, qty) plantings."""
 	held = hold_weeks(version, form)

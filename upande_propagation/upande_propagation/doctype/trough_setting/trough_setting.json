@@ -1,0 +1,287 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-11-02 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "trough",
+  "propagation_unit",
+  "company",
+  "column_break_a",
+  "propagation_batch",
+  "variety",
+  "form",
+  "section_set",
+  "set_date",
+  "plants",
+  "units",
+  "column_break_b",
+  "capacity_plants",
+  "fill_pct",
+  "crop_protocol_version",
+  "section_lifts",
+  "lifts",
+  "section_state",
+  "status",
+  "plants_lifted",
+  "plants_remaining",
+  "column_break_c",
+  "freed_on",
+  "production_plan",
+  "section_notes",
+  "notes",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "TRS-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "TRS-.YYYY.-.#####",
+   "print_hide": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "trough",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Trough",
+   "options": "Propagation Trough",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "trough.propagation_unit",
+   "fieldname": "propagation_unit",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Unit",
+   "options": "Warehouse",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "trough.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The batch this trough is part of. One batch may be set into several troughs, on different days.",
+   "fieldname": "propagation_batch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Batch",
+   "options": "Propagation Batch"
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Variety",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "description": "What went into the trough. The protocol's lift table for this form says when it comes back out.",
+   "fieldname": "form",
+   "fieldtype": "Select",
+   "label": "Set As",
+   "options": "\nTissue Culture\nRoots\nCuttings\nPlants",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_set",
+   "fieldtype": "Section Break",
+   "label": "Setting"
+  },
+  {
+   "fieldname": "set_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Set On",
+   "reqd": 1
+  },
+  {
+   "description": "What the trough holds. A trough is planted full or not at all, so this is normally its whole capacity.",
+   "fieldname": "plants",
+   "fieldtype": "Int",
+   "label": "Plants Set",
+   "reqd": 1
+  },
+  {
+   "description": "Roots, plantlets or cuttings actually put in, where that differs from the plants they become.",
+   "fieldname": "units",
+   "fieldtype": "Int",
+   "label": "Units Set"
+  },
+  {
+   "fieldname": "column_break_b",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "trough.plants_per_trough",
+   "fieldname": "capacity_plants",
+   "fieldtype": "Int",
+   "label": "Trough Capacity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fill_pct",
+   "fieldtype": "Percent",
+   "label": "Filled",
+   "read_only": 1
+  },
+  {
+   "description": "The version whose lift table dated the lifts below.",
+   "fieldname": "crop_protocol_version",
+   "fieldtype": "Link",
+   "label": "Protocol Version",
+   "options": "Crop Protocol Version"
+  },
+  {
+   "fieldname": "section_lifts",
+   "fieldtype": "Section Break",
+   "label": "Lifts"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "lifts",
+   "fieldtype": "Table",
+   "label": "Lifts",
+   "options": "Propagation Trough Lift"
+  },
+  {
+   "fieldname": "section_state",
+   "fieldtype": "Section Break",
+   "label": "State"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Standing",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Standing\nPartly Lifted\nLifted\nDiscarded",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "plants_lifted",
+   "fieldtype": "Int",
+   "label": "Plants Lifted",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "plants_remaining",
+   "fieldtype": "Int",
+   "label": "Plants Still In",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_c",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "The day the last lift was taken. Until then the trough is held and cannot take another setting.",
+   "fieldname": "freed_on",
+   "fieldtype": "Date",
+   "label": "Trough Freed",
+   "read_only": 1
+  },
+  {
+   "description": "The plan this setting answers, so it can be set against the troughs that plan asked for.",
+   "fieldname": "production_plan",
+   "fieldtype": "Link",
+   "label": "Production Plan",
+   "options": "Summer Flower Production Plan"
+  },
+  {
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Trough Setting",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-11-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Trough Setting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agriculture Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agriculture User",
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "trough",
+ "track_changes": 1
+}
