@@ -249,6 +249,20 @@ def _receipt_needs_paperwork():
 	}))
 
 
+def _tell_the_plan(doctype, name):
+	"""Pass an event to the production plan, where that app is installed.
+
+	Never fatal. The unit's own record is the thing that has to be written; a
+	plan that misses one event is a worse outcome than a dispatch that refuses
+	to save because another app was unhappy.
+	"""
+	try:
+		from upande_summer_flowers.summer_flowers import propagation_feed
+	except ImportError:
+		return None
+	return propagation_feed.feed(doctype, name)
+
+
 def new_consignment(supplier, variety, qty_received, arrival_date=None,
                     form="Tissue Culture", warehouse=None, rejected_warehouse=None,
                     rate=0, supplier_delivery_note=None, uom=None,
@@ -282,6 +296,7 @@ def new_consignment(supplier, variety, qty_received, arrival_date=None,
 	doc.insert()
 	if cint(submit):
 		doc.submit()
+		_tell_the_plan("Plant Consignment", doc.name)
 	return consignment_detail(doc.name)
 
 
@@ -407,6 +422,10 @@ def record_mortality(batches, qty, log_date=None, observations=None):
 			doc.mortality_today = dead
 			doc.observations = observations
 			doc.insert()
+			# Loss is the one event the ledger can never carry -- nothing moves
+			# when a tray fails -- so the plan hears about it from here or not
+			# at all.
+			_tell_the_plan("Daily Propagation Log", doc.name)
 			written.append({"batch": name, "log": doc.name, "mortality": dead})
 		except Exception as e:
 			frappe.db.rollback(save_point=point)
@@ -467,6 +486,7 @@ def dispatch_batch(propagation_batch, qty_dispatched, target_greenhouse=None,
 	doc.insert()
 	if cint(submit):
 		doc.submit()
+		_tell_the_plan("Seedling Dispatch", doc.name)
 	doc.reload()
 	return {"dispatch": doc.name, "batch": propagation_batch,
 	        "qty": cint(doc.qty_dispatched), "stock_entry": doc.stock_entry,
