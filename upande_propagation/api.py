@@ -543,6 +543,85 @@ def get_requests(company=None, include_closed=0):
 
 
 @frappe.whitelist()
+def get_troughs(company=None):
+	"""Every active trough with what is standing in it, and the recent settings.
+
+	A trough is Occupied when a Trough Setting still holds it (Standing or Partly
+	Lifted), Free when nothing does, and Out of Service when the desk says so. The
+	holding comes from troughs.settings_holding, the one place that decides it.
+	"""
+	check_access()
+	from upande_propagation import troughs as _troughs
+
+	filters = {"is_active": 1}
+	if company:
+		filters["company"] = company
+	rows = frappe.get_all(
+		"Propagation Trough",
+		filters=filters,
+		fields=["name", "trough_name", "propagation_unit", "company", "status", "plants_per_trough", "area_sqm"],
+		order_by="propagation_unit asc, trough_name asc",
+	)
+	held = {}
+	for unit in {r.propagation_unit for r in rows if r.propagation_unit}:
+		held.update(_troughs.settings_holding(unit))
+
+	troughs = []
+	for r in rows:
+		setting = held.get(r.name)
+		if r.status == "Out of Service":
+			state = "Out of Service"
+		else:
+			state = "Occupied" if setting else "Free"
+		capacity = cint(r.plants_per_trough)
+		troughs.append(
+			{
+				"name": r.name,
+				"trough_name": r.trough_name,
+				"unit": r.propagation_unit,
+				"company": r.company,
+				"state": state,
+				"capacity": capacity,
+				"area_sqm": flt(r.area_sqm),
+				"setting": setting.name if setting else None,
+				"variety": setting.variety if setting else None,
+				"form": setting.form if setting else None,
+				"set_date": str(setting.set_date) if setting and setting.set_date else None,
+				"plants": cint(setting.plants_remaining) if setting else 0,
+				"frees": str(setting.freed_on) if setting and setting.freed_on else None,
+				"fill_pct": flt(cint(setting.plants_remaining) * 100.0 / capacity, 1) if setting and capacity else None,
+			}
+		)
+
+	summary = {"troughs": len(troughs), "capacity": sum(t["capacity"] for t in troughs)}
+	for state in ("Free", "Occupied", "Out of Service"):
+		summary[state.lower().replace(" ", "_")] = sum(1 for t in troughs if t["state"] == state)
+	summary["plants"] = sum(t["plants"] for t in troughs)
+
+	setting_filters = {"docstatus": ["<", 2]}
+	if company:
+		setting_filters["company"] = company
+	settings = (
+		frappe.get_all(
+			"Trough Setting",
+			filters=setting_filters,
+			fields=[
+				"name", "trough", "propagation_unit", "variety", "form", "set_date", "plants",
+				"plants_lifted", "plants_remaining", "fill_pct", "status", "freed_on",
+			],
+			order_by="set_date desc, creation desc",
+			limit=100,
+		)
+		if frappe.db.table_exists("Trough Setting")
+		else []
+	)
+	for s in settings:
+		s["set_date"] = str(s.set_date) if s.set_date else None
+		s["freed_on"] = str(s.freed_on) if s.freed_on else None
+	return {"troughs": troughs, "summary": summary, "settings": settings}
+
+
+@frappe.whitelist()
 def get_batch_detail(name):
 	"""One batch, every document that touched it, in chain order."""
 	check_access()
