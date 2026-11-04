@@ -38,7 +38,7 @@
 			<script>
 				// Entering a crop (#/<crop_key>/...): that crop's own loader, if one is built; else the generic one.
 				(function () {
-					var VIEWS = ["dashboard", "batches", "logs", "requests", "dispatch", "troughs", "consignments", "trials", "mother-blocks", "traceability"];
+					var VIEWS = ["dashboard", "batches", "logs", "plans", "motherstock", "actuals", "receipts", "requests", "dispatch", "troughs", "consignments", "trials", "mother-blocks", "traceability"];
 					var k = (location.hash.match(/^#\/([a-z0-9-]+)/) || [])[1];
 					var img = document.getElementById("pr-splash-mark");
 					if (!k || !img || VIEWS.indexOf(k) >= 0) return;

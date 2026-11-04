@@ -1,5 +1,9 @@
 import {
   Boxes,
+  Layers,
+  Leaf,
+  Receipt,
+  Sprout as SproutIcon,
   CalendarDays,
   ClipboardCheck,
   ClipboardList,
@@ -45,6 +49,15 @@ export const NAV: NavGroup[] = [
       { view: "logs", label: "Daily Logs", icon: CalendarDays, classic: desk("daily-propagation-log"), classicLabel: "log list" },
       { view: "troughs", label: "Troughs", icon: Container, classic: desk("trough-setting"), classicLabel: "trough settings" },
       { view: "consignments", label: "Plant Consignments", icon: PackageCheck, classic: desk("plant-consignment"), classicLabel: "consignment list" },
+    ],
+  },
+  {
+    label: "Plans & Actuals",
+    items: [
+      { view: "plans", label: "Propagation Plans", icon: Layers, classic: desk("summer-flower-propagation-plan"), classicLabel: "plan list" },
+      { view: "motherstock", label: "Motherstock", icon: Leaf, classic: desk("summer-flower-motherstock-plan"), classicLabel: "motherstock plans" },
+      { view: "actuals", label: "Actuals", icon: SproutIcon, classic: desk("summer-flower-propagation-actual"), classicLabel: "actuals list" },
+      { view: "receipts", label: "Plant Receipts", icon: Receipt, classic: desk("purchase-receipt"), classicLabel: "purchase receipts" },
     ],
   },
   {

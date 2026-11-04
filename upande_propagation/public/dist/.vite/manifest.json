@@ -1,52 +1,59 @@
 {
-  "_DateRangePicker-4e5R68A5.js": {
-    "file": "chunks/DateRangePicker-4e5R68A5.js",
+  "_DateRangePicker-LuXbSoiL.js": {
+    "file": "chunks/DateRangePicker-LuXbSoiL.js",
     "name": "DateRangePicker",
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js"
+      "_format-C_UrksWg.js"
     ]
   },
-  "_KpiCard-COEA1dWh.js": {
-    "file": "chunks/KpiCard-COEA1dWh.js",
+  "_KpiCard-CpIxWBfE.js": {
+    "file": "chunks/KpiCard-CpIxWBfE.js",
     "name": "KpiCard",
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js"
+      "_format-C_UrksWg.js"
     ]
   },
-  "_StatusPill-Dt9IFPoe.js": {
-    "file": "chunks/StatusPill-Dt9IFPoe.js",
+  "_StatusPill-RxDVRuSa.js": {
+    "file": "chunks/StatusPill-RxDVRuSa.js",
     "name": "StatusPill",
     "imports": [
       "index.html"
     ]
   },
-  "_TogglePill-BvamzO9G.js": {
-    "file": "chunks/TogglePill-BvamzO9G.js",
+  "_TogglePill-Dx4E9DAU.js": {
+    "file": "chunks/TogglePill-Dx4E9DAU.js",
     "name": "TogglePill",
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js"
+      "_format-C_UrksWg.js"
     ]
   },
-  "_charts-DiO6Uyls.js": {
-    "file": "chunks/charts-DiO6Uyls.js",
+  "_arrow-left-dbIeDna5.js": {
+    "file": "chunks/arrow-left-dbIeDna5.js",
+    "name": "arrow-left",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "_charts-DiVKaatE.js": {
+    "file": "chunks/charts-DiVKaatE.js",
     "name": "charts",
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js"
+      "_format-C_UrksWg.js"
     ]
   },
-  "_format-CWXSE9FC.js": {
-    "file": "chunks/format-CWXSE9FC.js",
+  "_format-C_UrksWg.js": {
+    "file": "chunks/format-C_UrksWg.js",
     "name": "format",
     "imports": [
       "index.html"
     ]
   },
   "index.html": {
-    "file": "propagation-BfV4amQI.js",
+    "file": "propagation-Dus8a63g.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -54,6 +61,12 @@
       "src/pages/Dashboard.tsx",
       "src/pages/Batches.tsx",
       "src/pages/BatchDetail.tsx",
+      "src/pages/Plans.tsx",
+      "src/pages/PlanDetail.tsx",
+      "src/pages/Motherstock.tsx",
+      "src/pages/MotherstockDetail.tsx",
+      "src/pages/Actuals.tsx",
+      "src/pages/Receipts.tsx",
       "src/pages/Logs.tsx",
       "src/pages/Requests.tsx",
       "src/pages/Dispatch.tsx",
@@ -86,150 +99,230 @@
     "file": "assets/poppins-700-Qrb0O0WB.woff2",
     "src": "src/assets/fonts/poppins-700.woff2"
   },
+  "src/pages/Actuals.tsx": {
+    "file": "chunks/Actuals-BZBtke6H.js",
+    "name": "Actuals",
+    "src": "src/pages/Actuals.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js"
+    ]
+  },
   "src/pages/BatchDetail.tsx": {
-    "file": "chunks/BatchDetail-lZ4bMqka.js",
+    "file": "chunks/BatchDetail-BJS6hqLf.js",
     "name": "BatchDetail",
     "src": "src/pages/BatchDetail.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_StatusPill-Dt9IFPoe.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js"
+      "_format-C_UrksWg.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_arrow-left-dbIeDna5.js"
     ]
   },
   "src/pages/Batches.tsx": {
-    "file": "chunks/Batches-B8pXFSuo.js",
+    "file": "chunks/Batches-C6HFRF83.js",
     "name": "Batches",
     "src": "src/pages/Batches.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_StatusPill-Dt9IFPoe.js",
-      "_TogglePill-BvamzO9G.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js"
+      "_format-C_UrksWg.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_TogglePill-Dx4E9DAU.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js"
     ]
   },
   "src/pages/Consignments.tsx": {
-    "file": "chunks/Consignments-YXKGekxs.js",
+    "file": "chunks/Consignments-hO_8_gwy.js",
     "name": "Consignments",
     "src": "src/pages/Consignments.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js",
-      "_StatusPill-Dt9IFPoe.js",
-      "_DateRangePicker-4e5R68A5.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_DateRangePicker-LuXbSoiL.js"
     ]
   },
   "src/pages/Dashboard.tsx": {
-    "file": "chunks/Dashboard-aMxNEoXP.js",
+    "file": "chunks/Dashboard-Dh2O98n4.js",
     "name": "Dashboard",
     "src": "src/pages/Dashboard.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js",
-      "_StatusPill-Dt9IFPoe.js",
-      "_DateRangePicker-4e5R68A5.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_DateRangePicker-LuXbSoiL.js"
     ]
   },
   "src/pages/Dispatch.tsx": {
-    "file": "chunks/Dispatch-BRPI9-Vs.js",
+    "file": "chunks/Dispatch-DOfsDtOj.js",
     "name": "Dispatch",
     "src": "src/pages/Dispatch.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js",
-      "_StatusPill-Dt9IFPoe.js",
-      "_DateRangePicker-4e5R68A5.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_DateRangePicker-LuXbSoiL.js"
     ]
   },
   "src/pages/Logs.tsx": {
-    "file": "chunks/Logs-BsYkhkvT.js",
+    "file": "chunks/Logs-B2NUmMO4.js",
     "name": "Logs",
     "src": "src/pages/Logs.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js",
-      "_DateRangePicker-4e5R68A5.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_DateRangePicker-LuXbSoiL.js"
     ]
   },
   "src/pages/MotherBlocks.tsx": {
-    "file": "chunks/MotherBlocks-9TbMsU5F.js",
+    "file": "chunks/MotherBlocks-DZDwoizX.js",
     "name": "MotherBlocks",
     "src": "src/pages/MotherBlocks.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js",
-      "_StatusPill-Dt9IFPoe.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js"
+    ]
+  },
+  "src/pages/Motherstock.tsx": {
+    "file": "chunks/Motherstock-USKqux8I.js",
+    "name": "Motherstock",
+    "src": "src/pages/Motherstock.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js"
+    ]
+  },
+  "src/pages/MotherstockDetail.tsx": {
+    "file": "chunks/MotherstockDetail-B2VA4waf.js",
+    "name": "MotherstockDetail",
+    "src": "src/pages/MotherstockDetail.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_arrow-left-dbIeDna5.js"
+    ]
+  },
+  "src/pages/PlanDetail.tsx": {
+    "file": "chunks/PlanDetail-zZQGXB7z.js",
+    "name": "PlanDetail",
+    "src": "src/pages/PlanDetail.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_arrow-left-dbIeDna5.js"
+    ]
+  },
+  "src/pages/Plans.tsx": {
+    "file": "chunks/Plans-CF-uXOwV.js",
+    "name": "Plans",
+    "src": "src/pages/Plans.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js"
+    ]
+  },
+  "src/pages/Receipts.tsx": {
+    "file": "chunks/Receipts-Dko5R0z2.js",
+    "name": "Receipts",
+    "src": "src/pages/Receipts.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_DateRangePicker-LuXbSoiL.js"
     ]
   },
   "src/pages/Requests.tsx": {
-    "file": "chunks/Requests-CaBppItB.js",
+    "file": "chunks/Requests-37msfLPY.js",
     "name": "Requests",
     "src": "src/pages/Requests.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js",
-      "_StatusPill-Dt9IFPoe.js",
-      "_TogglePill-BvamzO9G.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_TogglePill-Dx4E9DAU.js"
     ]
   },
   "src/pages/Traceability.tsx": {
-    "file": "chunks/Traceability-yoZaklJO.js",
+    "file": "chunks/Traceability-CM9z6EHH.js",
     "name": "Traceability",
     "src": "src/pages/Traceability.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_StatusPill-Dt9IFPoe.js",
-      "_TogglePill-BvamzO9G.js"
+      "_format-C_UrksWg.js",
+      "_StatusPill-RxDVRuSa.js",
+      "_TogglePill-Dx4E9DAU.js"
     ]
   },
   "src/pages/Trials.tsx": {
-    "file": "chunks/Trials-ZXJwB6f8.js",
+    "file": "chunks/Trials-CaMkxXq_.js",
     "name": "Trials",
     "src": "src/pages/Trials.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_charts-DiO6Uyls.js",
-      "_StatusPill-Dt9IFPoe.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_charts-DiVKaatE.js",
+      "_StatusPill-RxDVRuSa.js"
     ]
   },
   "src/pages/Troughs.tsx": {
-    "file": "chunks/Troughs-4PaJXdq1.js",
+    "file": "chunks/Troughs-DlqJj4LU.js",
     "name": "Troughs",
     "src": "src/pages/Troughs.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_format-CWXSE9FC.js",
-      "_KpiCard-COEA1dWh.js",
-      "_StatusPill-Dt9IFPoe.js"
+      "_format-C_UrksWg.js",
+      "_KpiCard-CpIxWBfE.js",
+      "_StatusPill-RxDVRuSa.js"
     ]
   },
   "style.css": {

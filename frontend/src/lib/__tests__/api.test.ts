@@ -38,3 +38,16 @@ describe("api", () => {
     expect(isError(await troughBoard())).toBe(true);
   });
 });
+
+describe("plan endpoints", () => {
+  it("reads the plans from plans_api with the crop", async () => {
+    const f = reply({ plans: [], totals: {}, by_status: [] });
+    vi.stubGlobal("fetch", f);
+    const { propagationPlans, plantReceipts } = await import("@/lib/api");
+    await propagationPlans("Marginpar", "spray-roses");
+    expect(f.mock.calls[0][0]).toBe("/api/method/upande_propagation.plans_api.get_propagation_plans");
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ company: "Marginpar", crop: "spray-roses" });
+    await plantReceipts(undefined, "2026-01-01", "2026-06-30");
+    expect(f.mock.calls[1][0]).toBe("/api/method/upande_propagation.plans_api.get_plant_receipts");
+  });
+});

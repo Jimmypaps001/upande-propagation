@@ -36,6 +36,12 @@ function warm() {
 const Dashboard = page(() => import("@/pages/Dashboard").then((m) => ({ default: m.Dashboard })));
 const Batches = page(() => import("@/pages/Batches").then((m) => ({ default: m.Batches })));
 const BatchDetail = lazy(() => import("@/pages/BatchDetail").then((m) => ({ default: m.BatchDetail })));
+const Plans = page(() => import("@/pages/Plans").then((m) => ({ default: m.Plans })));
+const PlanDetail = lazy(() => import("@/pages/PlanDetail").then((m) => ({ default: m.PlanDetail })));
+const Motherstock = page(() => import("@/pages/Motherstock").then((m) => ({ default: m.Motherstock })));
+const MotherstockDetail = lazy(() => import("@/pages/MotherstockDetail").then((m) => ({ default: m.MotherstockDetail })));
+const Actuals = page(() => import("@/pages/Actuals").then((m) => ({ default: m.Actuals })));
+const Receipts = page(() => import("@/pages/Receipts").then((m) => ({ default: m.Receipts })));
 const Logs = page(() => import("@/pages/Logs").then((m) => ({ default: m.Logs })));
 const Requests = page(() => import("@/pages/Requests").then((m) => ({ default: m.Requests })));
 const Dispatch = page(() => import("@/pages/Dispatch").then((m) => ({ default: m.Dispatch })));
@@ -49,6 +55,10 @@ const PAGES: Record<View, React.ComponentType> = {
   dashboard: Dashboard,
   batches: Batches,
   logs: Logs,
+  plans: Plans,
+  motherstock: Motherstock,
+  actuals: Actuals,
+  receipts: Receipts,
   requests: Requests,
   dispatch: Dispatch,
   troughs: Troughs,
@@ -63,6 +73,12 @@ const PAGES: Record<View, React.ComponentType> = {
  * none), held long enough to see the arrow step aside and the scene begin, then faded. The first load is
  * covered by the splash in the page shell, so this only runs when the crop CHANGES.
  */
+const DETAILS: Partial<Record<View, React.ComponentType<{ name: string }>>> = {
+  batches: BatchDetail,
+  plans: PlanDetail,
+  motherstock: MotherstockDetail,
+};
+
 function CropCover({ cropKey }: { cropKey: string }) {
   const first = useRef(true);
   const [shown, setShown] = useState<string | null>(null);
@@ -105,8 +121,8 @@ function CropCover({ cropKey }: { cropKey: string }) {
 function Shell({ route, navigate }: { route: ReturnType<typeof useRoute>[0]; navigate: ReturnType<typeof useRoute>[1] }) {
   const { crop } = useCrop();
   const Built = PAGES[route.view];
-  const body =
-    route.view === "batches" && route.arg ? <BatchDetail key={route.arg} name={route.arg} /> : <Built key={route.view} />;
+  const Detail = route.arg ? DETAILS[route.view] : undefined;
+  const body = Detail ? <Detail key={route.arg} name={route.arg as string} /> : <Built key={route.view} />;
   return (
     <SidebarProvider>
       <AppSidebar view={route.view} crop={crop} onNavigate={(v) => navigate(v, null, route.crop)} />

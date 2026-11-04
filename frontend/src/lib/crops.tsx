@@ -46,7 +46,7 @@ export function useHref() {
 /** Open the same page under another crop ("" is All crops). A record's own page goes back to its list. */
 export function switchCrop(key: string) {
   const r = parseRoute(window.location.hash);
-  const h = routeHash(r.view, r.view === "batches" ? null : r.arg, key || null);
+  const h = routeHash(r.view, ["batches", "plans", "motherstock"].includes(r.view) ? null : r.arg, key || null);
   if (window.location.hash !== h) window.location.hash = h;
 }
 

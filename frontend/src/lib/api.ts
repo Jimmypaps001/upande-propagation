@@ -306,6 +306,96 @@ export interface FlowerTrial {
 
 export const flowerTrials = (crop?: string) => call<FlowerTrial[]>(`${API}.get_flower_trials`, { crop: crop || null });
 
+const PLANS = "upande_propagation.plans_api";
+
+export interface PlanRow {
+  name: string; variety: string | null; farm: string | null; company: string | null; propagation_unit: string | null;
+  season: string | null; season_start_year: number | null; status: string | null; production_plan: string | null;
+  raised_from: string | null; total_plants_to_stick: number; total_cuttings_required: number; peak_weekly_cuttings: number;
+  peak_week: string | null; weeks_sticking: number; cuttings_from_existing: number; cuttings_from_new: number;
+  cuttings_from_bought: number; cuttings_uncovered: number; plants_short: number; stems_at_risk: number;
+  tc_plants_required: number; tc_order_date: string | null; tc_on_farm_date: string | null; first_sticking_date: string | null;
+  total_cost: number | null; tc_cost: number | null; actuals_recorded: number; weeks_closed: number; tc_received: number;
+  roots_withdrawn: number; plants_to_farm: number; plants_lost: number; delivered_short: number; schedule_warning: string | null;
+}
+
+export interface PlanList {
+  plans: PlanRow[];
+  totals: Record<string, number>;
+  by_status: Array<{ status: string; plans: number }>;
+}
+
+export const propagationPlans = (company?: string, crop?: string) =>
+  call<PlanList>(`${PLANS}.get_propagation_plans`, { company: company || null, crop: crop || null });
+
+export interface PlanDetail {
+  plan: Record<string, unknown>;
+  weeks: Array<Record<string, unknown>>;
+  intake: Array<Record<string, unknown>>;
+  sources: Array<Record<string, unknown>>;
+  allocations: Array<Record<string, unknown>>;
+}
+
+export const propagationPlan = (name: string) => call<PlanDetail>(`${PLANS}.get_propagation_plan`, { name });
+
+export interface MotherstockPlan {
+  name: string; variety: string | null; farm: string | null; season: string | null; production_plan: string | null;
+  tc_to_order: number; multiplications: number; generations: number; order_by_date: string | null; tc_arrival_date: string | null;
+  first_cut_date: string | null; line_end_date: string | null; peak_pool: number; cuttings_spare: number; mothers_removed: number;
+  plants_to_field: number; cuttings_required: number; weeks_met: number; weeks_required: number; covers: number; shortfall: number;
+}
+export interface MotherstockBatch {
+  name: string; variety: string | null; farm: string | null; batch_status: string | null; generation: number; mother_plants: number;
+  pots_required: number; peak_weekly_cuttings: number; tc_plants_required: number; tc_order_date: string | null;
+  tc_on_farm_date: string | null; first_sticking_date: string | null; expiry_date: string | null; total_cost: number | null;
+}
+export interface MotherstockBook {
+  plans: MotherstockPlan[];
+  batches: MotherstockBatch[];
+  totals: { plans: number; covering: number; short: number; peak_pool: number; batches: number; mother_plants: number };
+}
+
+export const motherstockBook = (company?: string, crop?: string) =>
+  call<MotherstockBook>(`${PLANS}.get_motherstock`, { company: company || null, crop: crop || null });
+
+export interface MotherstockDetail {
+  plan: Record<string, unknown>;
+  generations: Array<Record<string, unknown>>;
+  schedule: Array<Record<string, unknown>>;
+}
+
+export const motherstockPlan = (name: string) => call<MotherstockDetail>(`${PLANS}.get_motherstock_plan`, { name });
+
+export interface ActualRow {
+  name: string; propagation_plan: string | null; variety: string | null; farm: string | null; event: string | null;
+  actual_date: string | null; week_iso: string | null; units: number; plants: number; supplier: string | null;
+  reference: string | null; form: string | null; warehouse: string | null; reason: string | null; recorded_from: string | null;
+}
+export interface ActualsBook {
+  actuals: ActualRow[];
+  by_event: Array<{ event: string; records: number; plants: number }>;
+  plans: Array<{ name: string; variety: string | null; farm: string | null; season: string | null; status: string | null;
+    actuals_recorded: number; weeks_closed: number; tc_received: number; roots_withdrawn: number; plants_to_farm: number;
+    plants_lost: number; delivered_short: number }>;
+}
+
+export const planActuals = (company?: string, crop?: string) =>
+  call<ActualsBook>(`${PLANS}.get_plan_actuals`, { company: company || null, crop: crop || null });
+
+export interface ReceiptLine {
+  document_type: string; document: string; posting_date: string; supplier: string | null; company: string | null;
+  docstatus: number; item_code: string; item_name: string | null; qty: number; received_qty: number; rejected_qty: number;
+  planting: string | null; block: string | null; planned_plants: number; variance: number; days_before_planting: number;
+  quality_inspection: string | null;
+}
+export interface ReceiptBook {
+  lines: ReceiptLine[];
+  totals: { lines: number; qty: number; rejected: number; planned: number; variance: number };
+}
+
+export const plantReceipts = (company?: string, from?: string, to?: string, crop?: string) =>
+  call<ReceiptBook>(`${PLANS}.get_plant_receipts`, { company: company || null, from_date: from || null, to_date: to || null, crop: crop || null });
+
 export const farms = () => list<{ name: string }>("Company", ["name"], { order_by: "name asc", limit: 100 });
 
 export interface ReportResult {

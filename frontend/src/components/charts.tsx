@@ -47,8 +47,8 @@ export function Bars({ data, x, y, label, height = 260, color = SERIES[0] }: { d
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--sd-line)" />
-          <XAxis dataKey={x} tick={AXIS} tickLine={false} axisLine={false} interval={0} tickFormatter={(v) => (String(v).length > 11 ? `${String(v).slice(0, 10)}…` : String(v))} />
-          <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={n} width={52} />
+          <XAxis dataKey={x} tick={AXIS} tickLine={false} axisLine={false} interval={data.length > 14 ? "preserveStartEnd" : 0} minTickGap={8} tickFormatter={(v) => (String(v).length > 11 ? `${String(v).slice(0, 10)}…` : String(v))} />
+          <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={n} width={68} />
           <Tooltip {...TIP} formatter={(v) => n(v)} cursor={{ fill: "var(--sd-bg-soft)" }} />
           <Bar dataKey={y} name={label} fill={color} radius={[6, 6, 0, 0]} maxBarSize={44} />
         </BarChart>
@@ -111,7 +111,7 @@ export function Series({ data, x, y, label, kind = "area", color = SERIES[0], he
           <AreaChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--sd-line)" />
             <XAxis dataKey={x} tick={AXIS} tickLine={false} axisLine={false} tickFormatter={short} minTickGap={24} />
-            <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={n} width={52} />
+            <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={n} width={68} />
             <Tooltip {...TIP} formatter={(v) => n(v)} />
             <Area type="monotone" dataKey={y} name={label} stroke={color} fill={color} fillOpacity={0.16} strokeWidth={2} />
           </AreaChart>
@@ -119,7 +119,7 @@ export function Series({ data, x, y, label, kind = "area", color = SERIES[0], he
           <LineChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--sd-line)" />
             <XAxis dataKey={x} tick={AXIS} tickLine={false} axisLine={false} tickFormatter={short} minTickGap={24} />
-            <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={n} width={52} />
+            <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={n} width={68} />
             <Tooltip {...TIP} formatter={(v) => n(v)} />
             <Line type="monotone" dataKey={y} name={label} stroke={color} strokeWidth={2} dot={false} />
           </LineChart>
