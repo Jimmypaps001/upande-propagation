@@ -293,7 +293,9 @@ add_to_apps_screen = [
 	}
 ]
 
-# The launcher block on the Propagation workspace.
+# The launcher block on the Propagation workspace, and the portal dashboard page
+# (which lives only in the database until it is exported here).
 fixtures = [
 	{"doctype": "Custom HTML Block", "filters": [["name", "in", ["Propagation Navigation"]]]},
+	{"doctype": "Web Page", "filters": [["route", "=", "propagation-dashboard"]]},
 ]

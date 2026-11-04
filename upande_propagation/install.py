@@ -14,7 +14,6 @@ import frappe
 
 from upande_propagation.patches.v1_0 import (
 	add_propagation_unit_fields,
-	create_propagation_dashboard_page,
 	reconcile_propagation_desktop_icon,
 	seed_arrival_defaults,
 	seed_propagation_settings,
@@ -37,7 +36,6 @@ def setup():
 	# fresh site and brought the whole migrate down on the site it ran against.
 	add_propagation_unit_fields.execute()
 	seed_arrival_defaults.execute()
-	create_propagation_dashboard_page.execute()
 	sync_dashboard()
 	reconcile_propagation_desktop_icon.execute()
 
