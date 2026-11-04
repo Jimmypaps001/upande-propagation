@@ -68,6 +68,17 @@ required_apps = ["upande_production"]
 # Portal pages
 # ------------
 
+# Old upande_agriculture paths the phones and desk scripts still call. The roses
+# app's propagation endpoints keep their request/response shape in mobile/legacy.py.
+override_whitelisted_methods = {
+	"upande_agriculture.api.promote_trial_to_cycle": "upande_propagation.api.promote_trial_to_cycle",
+	"upande_agriculture.mobile.api.productionCreateSeedlingRequest": "upande_propagation.mobile.legacy.productionCreateSeedlingRequest",
+	"upande_agriculture.mobile.api.productionListSeedlingRequests": "upande_propagation.mobile.legacy.productionListSeedlingRequests",
+	"upande_agriculture.mobile.api.productionListPropagationBatches": "upande_propagation.mobile.legacy.productionListPropagationBatches",
+	"upande_agriculture.mobile.api.productionRecordPropagationLog": "upande_propagation.mobile.legacy.productionRecordPropagationLog",
+	"upande_agriculture.mobile.api.productionListGrowerCandidates": "upande_propagation.mobile.legacy.productionListGrowerCandidates",
+}
+
 website_route_rules = [
 	{"from_route": "/propagation/batch/<path:name>", "to_route": "propagation/batch"},
 ]
