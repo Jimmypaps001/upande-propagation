@@ -6,19 +6,21 @@ import { StatusPill } from "@/components/StatusPill";
 import { TogglePill } from "@/components/TogglePill";
 import { traceability } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop, useHref } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
-import { routeHash } from "@/lib/router";
 
 type Row = Record<string, unknown>;
 
 /** The Propagation Traceability script report, run through Frappe's own runner so it can never drift from the desk's. */
 export function Traceability() {
   const { farm } = useFarm();
+  const { cropKey } = useCrop();
+  const href = useHref();
   const [completed, setCompleted] = useState(false);
   const r = useLoad(
-    () => traceability({ ...(farm ? { company: farm } : {}), include_completed: completed ? 1 : 0 }),
-    [farm, completed],
+    () => traceability({ ...(farm ? { company: farm } : {}), ...(cropKey ? { crop: cropKey } : {}), include_completed: completed ? 1 : 0 }),
+    [farm, cropKey, completed],
   );
   const columns: Column<Row>[] = (r.data?.columns ?? []).map((c) => ({
     key: c.fieldname,
@@ -32,7 +34,7 @@ export function Traceability() {
       if (c.fieldtype === "Currency") return qty(Number(v), 2);
       if (c.fieldname === "status") return <StatusPill text={String(v)} />;
       if (c.fieldname === "document" && row.document_type === "Propagation Batch") {
-        return <a className="no-underline hover:underline" href={routeHash("batches", String(v))}>{String(v)}</a>;
+        return <a className="no-underline hover:underline" href={href("batches", String(v))}>{String(v)}</a>;
       }
       return String(v);
     },

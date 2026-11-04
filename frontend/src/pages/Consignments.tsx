@@ -8,18 +8,20 @@ import { StatusPill } from "@/components/StatusPill";
 import { DateRangePicker, type DateRange } from "@/components/DateRangePicker";
 import { consignments, type Consignment } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
 import { todayISO, ymd } from "@/lib/utils";
 
 export function Consignments() {
   const { farm } = useFarm();
+  const { cropKey } = useCrop();
   const [range, setRange] = useState<DateRange>(() => {
     const f = new Date();
     f.setMonth(f.getMonth() - 6);
     return { from: ymd(f), to: todayISO() };
   });
-  const r = useLoad(() => consignments(farm, range.from, range.to), [farm, range.from, range.to]);
+  const r = useLoad(() => consignments(farm, range.from, range.to, cropKey), [farm, range.from, range.to, cropKey]);
   const rows = r.data ?? null;
   const sum = (f: (c: Consignment) => number) => (rows ?? []).reduce((t, c) => t + (f(c) || 0), 0);
   const byStatus = Object.values(

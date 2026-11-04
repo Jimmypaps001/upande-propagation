@@ -8,13 +8,15 @@ import { StatusPill } from "@/components/StatusPill";
 import { TogglePill } from "@/components/TogglePill";
 import { requestsBook, type RequestRow } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
 
 export function Requests() {
   const { farm } = useFarm();
+  const { cropKey } = useCrop();
   const [closed, setClosed] = useState(false);
-  const r = useLoad(() => requestsBook(farm, closed), [farm, closed]);
+  const r = useLoad(() => requestsBook(farm, closed, cropKey), [farm, closed, cropKey]);
   const d = r.data;
   const rows = d?.requests ?? [];
   const [open, setOpen] = useState<string | null>(null);

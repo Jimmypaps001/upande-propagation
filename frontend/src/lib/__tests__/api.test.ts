@@ -15,13 +15,19 @@ describe("api", () => {
     await overview("Marginpar");
     const [url, init] = f.mock.calls[0];
     expect(url).toBe("/api/method/upande_propagation.api.get_overview");
-    expect(JSON.parse(init.body)).toEqual({ company: "Marginpar" });
+    expect(JSON.parse(init.body)).toEqual({ company: "Marginpar", crop: null });
   });
   it("sends null for all farms", async () => {
     const f = reply({ batches: [] });
     vi.stubGlobal("fetch", f);
     await batches("", true);
-    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ company: null, include_completed: 1 });
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ company: null, include_completed: 1, crop: null });
+  });
+  it("sends the crop key to narrow a page to one crop", async () => {
+    const f = reply({ batches: [] });
+    vi.stubGlobal("fetch", f);
+    await batches("", false, "spray-roses");
+    expect(JSON.parse(f.mock.calls[0][1].body).crop).toBe("spray-roses");
   });
   it("folds a refusal into an error", async () => {
     vi.stubGlobal("fetch", reply({ error: "no" }));

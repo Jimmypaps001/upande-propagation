@@ -8,7 +8,7 @@ import { HBars } from "@/components/charts";
 import { batchDetail, type Dispatch, type LogRow, type StageRow } from "@/lib/api";
 import { useLoad } from "@/lib/use-load";
 import { qty, kes, shortDate } from "@/lib/format";
-import { routeHash } from "@/lib/router";
+import { useHref } from "@/lib/crops";
 import { cn } from "@/lib/utils";
 
 /** The stage chain: every stage a batch has been through, with how long it stayed and what it lost. */
@@ -49,6 +49,7 @@ function Chain({ stages }: { stages: StageRow[] }) {
 }
 
 export function BatchDetail({ name }: { name: string }) {
+  const href = useHref();
   const r = useLoad(() => batchDetail(name), [name]);
   const d = r.data;
   const b = d?.batch;
@@ -84,7 +85,7 @@ export function BatchDetail({ name }: { name: string }) {
       classic={{ href: `/desk/propagation-batch/${encodeURIComponent(name)}`, label: "Classic view" }}
       controls={
         <a
-          href={routeHash("batches")}
+          href={href("batches")}
           className="inline-flex h-9 items-center gap-1.5 rounded-full bg-card px-4 text-xs font-medium text-foreground no-underline shadow-[var(--sd-shadow-1)] hover:shadow-[var(--sd-shadow-2)]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

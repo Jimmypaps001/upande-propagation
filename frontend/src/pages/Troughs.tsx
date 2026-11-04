@@ -5,6 +5,7 @@ import { KpiCard, KpiGrid } from "@/components/KpiCard";
 import { StatusPill } from "@/components/StatusPill";
 import { troughBoard, type TroughBoard, type TroughRow } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -55,7 +56,8 @@ function Board({ troughs }: { troughs: TroughRow[] }) {
 
 export function Troughs() {
   const { farm } = useFarm();
-  const r = useLoad(() => troughBoard(farm), [farm]);
+  const { cropKey } = useCrop();
+  const r = useLoad(() => troughBoard(farm, cropKey), [farm, cropKey]);
   const d: TroughBoard | null = r.data;
   const s = d?.summary;
 

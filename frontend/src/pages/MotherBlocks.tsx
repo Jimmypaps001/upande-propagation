@@ -6,6 +6,7 @@ import { Bars } from "@/components/charts";
 import { StatusPill } from "@/components/StatusPill";
 import { motherStock, type MotherStock } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
 
@@ -14,7 +15,8 @@ type Harvest = MotherStock["harvests"][number];
 
 export function MotherBlocks() {
   const { farm } = useFarm();
-  const r = useLoad(() => motherStock(farm), [farm]);
+  const { cropKey } = useCrop();
+  const r = useLoad(() => motherStock(farm, cropKey), [farm, cropKey]);
   const d = r.data;
 
   const cols: Column<Block>[] = [

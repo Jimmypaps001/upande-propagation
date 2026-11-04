@@ -8,9 +8,9 @@ import { StatusPill } from "@/components/StatusPill";
 import { DateRangePicker, type DateRange } from "@/components/DateRangePicker";
 import { dispatchBook, nurseryLogs, overview, requestsBook, type RequestRow } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop, useHref } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, kes, shortDate } from "@/lib/format";
-import { routeHash } from "@/lib/router";
 import { todayISO, ymd } from "@/lib/utils";
 
 function lastDays(n: number): DateRange {
@@ -27,12 +27,14 @@ function lastDays(n: number): DateRange {
  */
 export function Dashboard() {
   const { farm } = useFarm();
+  const { cropKey } = useCrop();
+  const href = useHref();
   const [range, setRange] = useState<DateRange>(() => lastDays(30));
 
-  const ov = useLoad(() => overview(farm), [farm]);
-  const book = useLoad(() => dispatchBook(farm, range.from, range.to), [farm, range.from, range.to]);
-  const logs = useLoad(() => nurseryLogs(farm, range.from, range.to), [farm, range.from, range.to]);
-  const reqs = useLoad(() => requestsBook(farm, true), [farm]);
+  const ov = useLoad(() => overview(farm, cropKey), [farm, cropKey]);
+  const book = useLoad(() => dispatchBook(farm, range.from, range.to, cropKey), [farm, range.from, range.to, cropKey]);
+  const logs = useLoad(() => nurseryLogs(farm, range.from, range.to, cropKey), [farm, range.from, range.to, cropKey]);
+  const reqs = useLoad(() => requestsBook(farm, true, cropKey), [farm, cropKey]);
 
   const k = ov.data?.kpis;
   const loading = ov.loading;
@@ -66,10 +68,10 @@ export function Dashboard() {
       onRefresh={refresh}
     >
       <KpiGrid>
-        <KpiCard label="Active batches" value={k?.active_batches ?? 0} hint="Not yet completed" href={routeHash("batches")} loading={loading} />
+        <KpiCard label="Active batches" value={k?.active_batches ?? 0} hint="Not yet completed" href={href("batches")} loading={loading} />
         <KpiCard label="Seedlings in the nursery" value={k?.in_nursery ?? 0} hint="Surviving across open batches" tone="good" loading={loading} />
         <KpiCard label="Ready to dispatch" value={k?.ready ?? 0} hint="Available to leave for a farm" tone="good" loading={loading} />
-        <KpiCard label="Open seedling requests" value={k?.open_requests ?? 0} hint="Submitted or part fulfilled" href={routeHash("requests")} loading={loading} />
+        <KpiCard label="Open seedling requests" value={k?.open_requests ?? 0} hint="Submitted or part fulfilled" href={href("requests")} loading={loading} />
         <KpiCard label="Planted this month" value={k?.planted_this_month ?? 0} hint="Internal planting dispatches" loading={loading} />
         <KpiCard label="Sold this month" value={k?.sold_this_month ?? 0} hint="Seedlings dispatched on sale" loading={loading} />
         <KpiCard label="Sales this month" value={kes(k?.revenue_this_month)} hint="Value of seedling sales" loading={loading} />
@@ -109,7 +111,7 @@ export function Dashboard() {
           rows={ov.data?.requests ?? null}
           loading={loading}
           rowKey={(r) => r.name}
-          rowHref={() => routeHash("requests")}
+          rowHref={() => href("requests")}
           search={false}
           empty="No open seedling requests."
         />

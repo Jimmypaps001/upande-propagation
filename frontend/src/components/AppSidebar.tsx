@@ -20,9 +20,10 @@ import { PropagationMark } from "@/components/PropagationMark";
 import { NAV } from "@/lib/nav";
 import { routeHash, type View } from "@/lib/router";
 import { cn } from "@/lib/utils";
+import type { CropInfo } from "@/lib/api";
 
 /** Brand, the grouped nav, then the pinned footer (collapse, back to the desk, who). */
-export function AppSidebar({ view, onNavigate }: { view: View; onNavigate: (view: View) => void }) {
+export function AppSidebar({ view, crop, onNavigate }: { view: View; crop: CropInfo | null; onNavigate: (view: View) => void }) {
   const { state, toggle } = useSidebar();
   const collapsed = state === "collapsed";
 
@@ -57,7 +58,7 @@ export function AppSidebar({ view, onNavigate }: { view: View; onNavigate: (view
             title="Open the Propagation workspace"
             className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full group-data-[collapsible=icon]:size-[3rem]"
           >
-            <PropagationMark size={48} />
+            <PropagationMark size={48} crop={crop?.crop_key} />
           </a>
           <div className="h-6 w-px shrink-0 bg-border group-data-[collapsible=icon]:hidden" />
           <div
@@ -69,7 +70,7 @@ export function AppSidebar({ view, onNavigate }: { view: View; onNavigate: (view
           >
             <span className="truncate text-sm font-semibold tracking-[-0.01em] text-foreground">Propagation</span>
             <span className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--sd-quiet)]">
-              Upande · Nursery
+              {crop?.name ?? "Upande · Nursery"}
             </span>
           </div>
         </div>
@@ -94,7 +95,7 @@ export function AppSidebar({ view, onNavigate }: { view: View; onNavigate: (view
                         <SidebarMenuItem key={it.view}>
                           <SidebarMenuButton asChild isActive={view === it.view} title={it.label}>
                             <a
-                              href={routeHash(it.view)}
+                              href={routeHash(it.view, null, crop?.crop_key)}
                               onClick={(e) => {
                                 e.preventDefault();
                                 onNavigate(it.view);

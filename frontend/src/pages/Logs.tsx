@@ -7,26 +7,28 @@ import { Bars, Series, SERIES } from "@/components/charts";
 import { DateRangePicker, type DateRange } from "@/components/DateRangePicker";
 import { nurseryLogs, type LogRow } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop, useHref } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
-import { routeHash } from "@/lib/router";
 import { todayISO, ymd } from "@/lib/utils";
 
 export function Logs() {
   const { farm } = useFarm();
+  const { cropKey } = useCrop();
+  const href = useHref();
   const [range, setRange] = useState<DateRange>(() => {
     const f = new Date();
     f.setDate(f.getDate() - 30);
     return { from: ymd(f), to: todayISO() };
   });
-  const r = useLoad(() => nurseryLogs(farm, range.from, range.to), [farm, range.from, range.to]);
+  const r = useLoad(() => nurseryLogs(farm, range.from, range.to, cropKey), [farm, range.from, range.to, cropKey]);
   const d = r.data;
   const done = (d?.by_activity ?? []).reduce((t, a) => t + a.done, 0);
   const dead = (d?.by_activity ?? []).reduce((t, a) => t + a.dead, 0);
 
   const cols: Column<LogRow>[] = [
     { key: "log_date", label: "Date", render: (l) => shortDate(l.log_date) },
-    { key: "propagation_batch", label: "Batch", render: (l) => (l.propagation_batch ? <a className="no-underline hover:underline" href={routeHash("batches", l.propagation_batch)}>{l.propagation_batch}</a> : "—") },
+    { key: "propagation_batch", label: "Batch", render: (l) => (l.propagation_batch ? <a className="no-underline hover:underline" href={href("batches", l.propagation_batch)}>{l.propagation_batch}</a> : "—") },
     { key: "rose_variety", label: "Variety" },
     { key: "activity_type", label: "Activity" },
     { key: "qty_done_today", label: "Done", align: "right", render: (l) => qty(l.qty_done_today) },

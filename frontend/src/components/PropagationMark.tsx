@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { markFor } from "@/lib/crops";
 
-const SRC = "/assets/upande_propagation/images/propagation_logo.svg";
+// One fetch per mark file; a crop with no file of its own falls back to the generic mark.
+const cache = new Map<string, Promise<string | null>>();
 
-let svgText: string | null = null;
-let loading: Promise<string | null> | null = null;
-
-function fetchSvg(): Promise<string | null> {
-  if (svgText) return Promise.resolve(svgText);
-  if (!loading) {
-    loading = fetch(SRC, { credentials: "same-origin" })
+function fetchSvg(src: string): Promise<string | null> {
+  let p = cache.get(src);
+  if (!p) {
+    p = fetch(src, { credentials: "same-origin" })
       .then((r) => (r.ok ? r.text() : null))
-      .then((t) => (svgText = t))
       .catch(() => null);
+    cache.set(src, p);
   }
-  return loading;
+  return p;
 }
 
 /**
@@ -25,13 +24,22 @@ function fetchSvg(): Promise<string | null> {
  * the desk's app tile uses). Until then, and if anything fails, it is the plain
  * file.
  */
-export function PropagationMark({ size = 48, title = "Upande Propagation" }: { size?: number; title?: string }) {
+export function PropagationMark({ size = 48, title = "Upande Propagation", crop }: { size?: number; title?: string; crop?: string | null }) {
+  const GENERIC = markFor(null);
+  const wanted = markFor(crop);
+  const [own, setOwn] = useState(true);
+  const SRC = own ? wanted : GENERIC;
   const [src, setSrc] = useState(SRC);
+  // A new crop gets its own scene; one with no file (the request fails) keeps the generic mark.
+  useEffect(() => {
+    setOwn(true);
+    setSrc(wanted);
+  }, [wanted]);
   const blob = useRef<string | null>(null);
   const reduced = typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
-    void fetchSvg();
+    void fetchSvg(SRC);
     return () => {
       if (blob.current) URL.revokeObjectURL(blob.current);
     };
@@ -39,14 +47,14 @@ export function PropagationMark({ size = 48, title = "Upande Propagation" }: { s
 
   const replay = useCallback(() => {
     if (reduced) return;
-    void fetchSvg().then((text) => {
+    void fetchSvg(SRC).then((text) => {
       if (!text) return;
       const next = URL.createObjectURL(new Blob([text], { type: "image/svg+xml" }));
       if (blob.current) URL.revokeObjectURL(blob.current);
       blob.current = next;
       setSrc(next);
     });
-  }, [reduced]);
+  }, [reduced, SRC]);
 
   return (
     <img
@@ -57,6 +65,12 @@ export function PropagationMark({ size = 48, title = "Upande Propagation" }: { s
       draggable={false}
       onMouseEnter={replay}
       onFocus={replay}
+      onError={() => {
+        if (own && crop) {
+          setOwn(false);
+          setSrc(GENERIC);
+        }
+      }}
       className="block rounded-full"
       style={{ width: size, height: size }}
     />

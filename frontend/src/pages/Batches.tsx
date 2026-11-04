@@ -8,18 +8,20 @@ import { KpiCard, KpiGrid } from "@/components/KpiCard";
 import { Bars } from "@/components/charts";
 import { batches, type Batch } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop, useHref } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
-import { routeHash } from "@/lib/router";
 
 export function Batches() {
   const { farm } = useFarm();
+  const { cropKey } = useCrop();
+  const href = useHref();
   const [done, setDone] = useState(false);
-  const r = useLoad(() => batches(farm, done), [farm, done]);
+  const r = useLoad(() => batches(farm, done, cropKey), [farm, done, cropKey]);
   const rows = r.data?.batches ?? [];
 
   const cols: Column<Batch>[] = [
-    { key: "name", label: "Batch", render: (b) => <a className="font-medium text-[var(--sd-ink)] no-underline hover:underline" href={routeHash("batches", b.name)}>{b.name}</a> },
+    { key: "name", label: "Batch", render: (b) => <a className="font-medium text-[var(--sd-ink)] no-underline hover:underline" href={href("batches", b.name)}>{b.name}</a> },
     { key: "variety_name", label: "Variety", value: (b) => b.variety_name || b.variety },
     { key: "current_stage", label: "Stage", render: (b) => <StatusPill text={b.current_stage} /> },
     { key: "propagation_unit", label: "Unit" },
@@ -53,7 +55,7 @@ export function Batches() {
         <Bars data={(r.data?.pipeline ?? []).map((p) => ({ stage: p.stage, seedlings: p.seedlings }))} x="stage" y="seedlings" label="Seedlings" height={220} />
       </Panel>
       <Panel title="Propagation batches">
-        <DataTable columns={cols} rows={rows} loading={r.loading} rowKey={(b) => b.name} rowHref={(b) => routeHash("batches", b.name)} empty="No batches yet." tall />
+        <DataTable columns={cols} rows={rows} loading={r.loading} rowKey={(b) => b.name} rowHref={(b) => href("batches", b.name)} empty="No batches yet." tall />
       </Panel>
     </Frame>
   );

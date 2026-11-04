@@ -5,11 +5,13 @@ import { KpiCard, KpiGrid } from "@/components/KpiCard";
 import { Donut } from "@/components/charts";
 import { StatusPill } from "@/components/StatusPill";
 import { flowerTrials, type FlowerTrial } from "@/lib/api";
+import { useCrop } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { qty, shortDate } from "@/lib/format";
 
 export function Trials() {
-  const r = useLoad(() => flowerTrials(), []);
+  const { cropKey } = useCrop();
+  const r = useLoad(() => flowerTrials(cropKey), [cropKey]);
   const rows = r.data ?? null;
   const byStatus = Object.values(
     (rows ?? []).reduce<Record<string, { status: string; n: number }>>((acc, t) => {

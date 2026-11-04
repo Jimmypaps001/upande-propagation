@@ -1,6 +1,7 @@
 import type * as React from "react";
 import { PageShell } from "@/components/PageShell";
 import { PlacePicker } from "@/components/PlacePicker";
+import { CropPicker } from "@/components/CropPicker";
 import { RefreshButton } from "@/components/RefreshButton";
 import { ClassicLink } from "@/components/ClassicLink";
 import { PageSkeleton } from "@/components/Loading";
@@ -53,6 +54,7 @@ export function Frame({
       description={description}
       actions={
         <>
+          <CropPicker />
           {farmFilter ? <PlacePicker farms={farms} value={farm} onChange={setFarm} /> : null}
           {controls}
           {onRefresh ? <RefreshButton onClick={onRefresh} loading={loading} label={nav.label.toLowerCase()} /> : null}

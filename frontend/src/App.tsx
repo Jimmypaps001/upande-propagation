@@ -1,10 +1,11 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "@/components/Toast";
 import { PageSkeleton } from "@/components/Loading";
 import { FarmProvider } from "@/lib/farm";
+import { CropProvider, loaderFor, useCrop } from "@/lib/crops";
 import { useRoute, type View } from "@/lib/router";
 
 /**
@@ -57,29 +58,78 @@ const PAGES: Record<View, React.ComponentType> = {
   traceability: Traceability,
 };
 
+/**
+ * The cover that comes up when a crop is chosen: that crop's own loader (the generic one where a crop has
+ * none), held long enough to see the arrow step aside and the scene begin, then faded. The first load is
+ * covered by the splash in the page shell, so this only runs when the crop CHANGES.
+ */
+function CropCover({ cropKey }: { cropKey: string }) {
+  const first = useRef(true);
+  const [shown, setShown] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setShown(cropKey);
+    setLeaving(false);
+    const a = window.setTimeout(() => setLeaving(true), 2200);
+    const b = window.setTimeout(() => setShown(null), 2500);
+    return () => {
+      window.clearTimeout(a);
+      window.clearTimeout(b);
+    };
+  }, [cropKey]);
+  if (shown === null) return null;
+  return (
+    <div
+      data-testid="crop-cover"
+      className="fixed inset-0 z-[2147483000] flex items-center justify-center bg-white transition-opacity duration-300"
+      style={{ opacity: leaving ? 0 : 1, pointerEvents: leaving ? "none" : "auto" }}
+    >
+      <img
+        src={loaderFor(shown)}
+        alt=""
+        style={{ width: 106, height: "auto" }}
+        onError={(e) => {
+          const img = e.currentTarget;
+          const generic = loaderFor(null);
+          if (!img.src.endsWith(generic)) img.src = generic;
+        }}
+      />
+    </div>
+  );
+}
+
+function Shell({ route, navigate }: { route: ReturnType<typeof useRoute>[0]; navigate: ReturnType<typeof useRoute>[1] }) {
+  const { crop } = useCrop();
+  const Built = PAGES[route.view];
+  const body =
+    route.view === "batches" && route.arg ? <BatchDetail key={route.arg} name={route.arg} /> : <Built key={route.view} />;
+  return (
+    <SidebarProvider>
+      <AppSidebar view={route.view} crop={crop} onNavigate={(v) => navigate(v, null, route.crop)} />
+      {/* min-w-0 so a wide table scrolls in its own box instead of pushing the page sideways. */}
+      <SidebarInset className="min-w-0">
+        <Suspense fallback={<PageSkeleton />}>{body}</Suspense>
+      </SidebarInset>
+      <CropCover cropKey={route.crop ?? ""} />
+    </SidebarProvider>
+  );
+}
+
 export function App() {
   const [route, navigate] = useRoute();
   useEffect(warm, []);
-
-  const Built = PAGES[route.view];
-  const body =
-    route.view === "batches" && route.arg ? (
-      <BatchDetail key={route.arg} name={route.arg} />
-    ) : (
-      <Built key={route.view} />
-    );
 
   return (
     <TooltipProvider delayDuration={200}>
       <ToastProvider>
         <FarmProvider>
-          <SidebarProvider>
-            <AppSidebar view={route.view} onNavigate={(v) => navigate(v)} />
-            {/* min-w-0 so a wide table scrolls in its own box instead of pushing the page sideways. */}
-            <SidebarInset className="min-w-0">
-              <Suspense fallback={<PageSkeleton />}>{body}</Suspense>
-            </SidebarInset>
-          </SidebarProvider>
+          <CropProvider cropKey={route.crop ?? ""}>
+            <Shell route={route} navigate={navigate} />
+          </CropProvider>
         </FarmProvider>
       </ToastProvider>
     </TooltipProvider>

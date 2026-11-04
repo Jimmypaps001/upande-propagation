@@ -8,19 +8,21 @@ import { StatusPill } from "@/components/StatusPill";
 import { DateRangePicker, type DateRange } from "@/components/DateRangePicker";
 import { dispatchBook, type Dispatch as Row } from "@/lib/api";
 import { useFarm } from "@/lib/farm";
+import { useCrop, useHref } from "@/lib/crops";
 import { useLoad } from "@/lib/use-load";
 import { kes, qty, shortDate } from "@/lib/format";
-import { routeHash } from "@/lib/router";
 import { todayISO, ymd } from "@/lib/utils";
 
 export function Dispatch() {
   const { farm } = useFarm();
+  const { cropKey } = useCrop();
+  const href = useHref();
   const [range, setRange] = useState<DateRange>(() => {
     const f = new Date();
     f.setFullYear(f.getFullYear() - 1);
     return { from: ymd(f), to: todayISO() };
   });
-  const r = useLoad(() => dispatchBook(farm, range.from, range.to), [farm, range.from, range.to]);
+  const r = useLoad(() => dispatchBook(farm, range.from, range.to, cropKey), [farm, range.from, range.to, cropKey]);
   const d = r.data;
   const total = (d?.by_purpose ?? []).reduce((t, p) => t + p.qty, 0);
   const sales = (d?.by_purpose ?? []).filter((p) => p.purpose === "Sale").reduce((t, p) => t + p.amount, 0);
@@ -28,7 +30,7 @@ export function Dispatch() {
   const cols: Column<Row>[] = [
     { key: "dispatch_date", label: "Date", render: (x) => shortDate(x.dispatch_date) },
     { key: "name", label: "Dispatch" },
-    { key: "propagation_batch", label: "Batch", render: (x) => (x.propagation_batch ? <a className="no-underline hover:underline" href={routeHash("batches", x.propagation_batch)}>{x.propagation_batch}</a> : "—") },
+    { key: "propagation_batch", label: "Batch", render: (x) => (x.propagation_batch ? <a className="no-underline hover:underline" href={href("batches", x.propagation_batch)}>{x.propagation_batch}</a> : "—") },
     { key: "variety", label: "Variety" },
     { key: "purpose", label: "Purpose", render: (x) => <StatusPill text={x.purpose} /> },
     { key: "qty_dispatched", label: "Qty", align: "right", render: (x) => qty(x.qty_dispatched) },

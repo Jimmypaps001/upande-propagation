@@ -109,12 +109,24 @@ export interface Overview {
   dispatches: Dispatch[];
 }
 
-export const overview = (company?: string) => call<Overview>(`${API}.get_overview`, { company: company || null });
+export interface CropInfo {
+  name: string;
+  crop_key: string;
+  accent_color: string | null;
+  varieties: string[];
+}
 
-export const batches = (company: string | undefined, includeCompleted: boolean) =>
+/** The crops propagation can be filtered to (Production Crop), with their accents. */
+export const crops = () => call<{ crops: CropInfo[] }>(`${API}.get_crops`);
+
+export const overview = (company?: string, crop?: string) =>
+  call<Overview>(`${API}.get_overview`, { company: company || null, crop: crop || null });
+
+export const batches = (company: string | undefined, includeCompleted: boolean, crop?: string) =>
   call<{ batches: Batch[]; funnel: FunnelStep[]; pipeline: PipelineRow[] }>(`${API}.get_batches`, {
     company: company || null,
     include_completed: includeCompleted ? 1 : 0,
+    crop: crop || null,
   });
 
 export interface StageRow {
@@ -167,8 +179,8 @@ export interface NurseryLogs {
   by_batch: Array<{ propagation_batch: string; variety: string | null; done: number; dead: number }>;
 }
 
-export const nurseryLogs = (company: string | undefined, from?: string, to?: string) =>
-  call<NurseryLogs>(`${API}.get_nursery_logs`, { company: company || null, from_date: from || null, to_date: to || null });
+export const nurseryLogs = (company: string | undefined, from?: string, to?: string, crop?: string) =>
+  call<NurseryLogs>(`${API}.get_nursery_logs`, { company: company || null, from_date: from || null, to_date: to || null, crop: crop || null });
 
 export interface DispatchBook {
   dispatches: Dispatch[];
@@ -179,8 +191,8 @@ export interface DispatchBook {
   invoices: Array<{ name: string; posting_date: string; grand_total: number; outstanding_amount: number; status: string; currency: string }>;
 }
 
-export const dispatchBook = (company: string | undefined, from?: string, to?: string) =>
-  call<DispatchBook>(`${API}.get_dispatch_book`, { company: company || null, from_date: from || null, to_date: to || null });
+export const dispatchBook = (company: string | undefined, from?: string, to?: string, crop?: string) =>
+  call<DispatchBook>(`${API}.get_dispatch_book`, { company: company || null, from_date: from || null, to_date: to || null, crop: crop || null });
 
 export interface RequestsBook {
   requests: RequestRow[];
@@ -188,8 +200,8 @@ export interface RequestsBook {
   by_status: Array<{ status: string; requests: number; requested: number; dispatched: number }>;
 }
 
-export const requestsBook = (company: string | undefined, includeClosed: boolean) =>
-  call<RequestsBook>(`${API}.get_requests`, { company: company || null, include_closed: includeClosed ? 1 : 0 });
+export const requestsBook = (company: string | undefined, includeClosed: boolean, crop?: string) =>
+  call<RequestsBook>(`${API}.get_requests`, { company: company || null, include_closed: includeClosed ? 1 : 0, crop: crop || null });
 
 export interface MotherStock {
   blocks: Array<{
@@ -202,7 +214,8 @@ export interface MotherStock {
   by_variety: Array<{ variety: string; blocks: number; taken: number }>;
 }
 
-export const motherStock = (company?: string) => call<MotherStock>(`${API}.get_mother_stock`, { company: company || null });
+export const motherStock = (company?: string, crop?: string) =>
+  call<MotherStock>(`${API}.get_mother_stock`, { company: company || null, crop: crop || null });
 
 export interface TroughRow {
   name: string;
@@ -231,7 +244,8 @@ export interface TroughBoard {
   }>;
 }
 
-export const troughBoard = (company?: string) => call<TroughBoard>(`${API}.get_troughs`, { company: company || null });
+export const troughBoard = (company?: string, crop?: string) =>
+  call<TroughBoard>(`${API}.get_troughs`, { company: company || null, crop: crop || null });
 
 export interface Consignment {
   name: string;
@@ -254,11 +268,12 @@ export interface Consignment {
   docstatus: number;
 }
 
-export const consignments = (company: string | undefined, from?: string, to?: string) =>
+export const consignments = (company: string | undefined, from?: string, to?: string, crop?: string) =>
   call<Consignment[]>(`${MOBILE}.consignments`, {
     company: company || null,
     from_date: from || null,
     to_date: to || null,
+    crop: crop || null,
     limit: 200,
   });
 
@@ -289,11 +304,7 @@ export interface FlowerTrial {
   recommendation: string | null;
 }
 
-export const flowerTrials = () =>
-  list<FlowerTrial>("Flower Trial", [
-    "name", "trial_name", "greenhouse", "crop_type", "cycle_status", "area", "seedling_source", "qty_planted",
-    "current_live_plants", "planting_date", "first_harvest_date", "total_stems_harvested", "overall_rating", "recommendation",
-  ]);
+export const flowerTrials = (crop?: string) => call<FlowerTrial[]>(`${API}.get_flower_trials`, { crop: crop || null });
 
 export const farms = () => list<{ name: string }>("Company", ["name"], { order_by: "name asc", limit: 100 });
 
