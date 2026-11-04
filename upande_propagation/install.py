@@ -22,6 +22,10 @@ from upande_propagation.patches.v1_0 import (
 
 def after_install():
 	setup()
+	from upande_propagation.setup import plant_quality, propagation_units
+
+	propagation_units.install()
+	plant_quality.install()
 
 
 def after_migrate():

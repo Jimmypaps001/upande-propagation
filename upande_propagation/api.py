@@ -952,6 +952,9 @@ def promote_trial_to_cycle(
 
 	cycle = frappe.get_doc({
 		"doctype": "Crop Cycle",
+		# A trial is planted in a greenhouse. Where Crop Cycle can also be block-based (the Summer Flowers
+		# customisation) it asks which, and the answer is mandatory.
+		**({"custom_cycle_scope": "Greenhouse"} if frappe.get_meta("Crop Cycle").has_field("custom_cycle_scope") else {}),
 		"greenhouse": greenhouse,
 		"variety": variety,
 		"crop_protocol": proto_name,

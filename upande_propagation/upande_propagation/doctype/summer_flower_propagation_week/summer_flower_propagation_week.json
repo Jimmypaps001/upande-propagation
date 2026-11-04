@@ -1,0 +1,210 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "creation": "2026-08-01 10:56:38.322538",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "year",
+  "week_no",
+  "week_start_date",
+  "plants_to_stick",
+  "cuttings_required",
+  "from_existing_ms",
+  "from_new_ms",
+  "from_bought",
+  "capacity_available",
+  "ramp_pct",
+  "shortfall",
+  "deliver_on",
+  "plant_week",
+  "notes",
+  "sec_actual",
+  "baseline_plants",
+  "actual_plants",
+  "variance_plants",
+  "actual_on",
+  "state",
+  "recorded_from",
+  "uplift_plants"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "year",
+   "fieldtype": "Int",
+   "in_list_view": 0,
+   "label": "Year"
+  },
+  {
+   "columns": 1,
+   "fieldname": "week_no",
+   "fieldtype": "Int",
+   "in_list_view": 0,
+   "label": "Week"
+  },
+  {
+   "columns": 2,
+   "fieldname": "week_start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Stuck In Week"
+  },
+  {
+   "columns": 1,
+   "description": "Plants this week's sticking supplies, for the planting week beside it. This is what the propagation unit hands the field.",
+   "fieldname": "plants_to_stick",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Plants Supplied"
+  },
+  {
+   "columns": 1,
+   "description": "Plants scaled up for rooting, field and reject losses.",
+   "fieldname": "cuttings_required",
+   "fieldtype": "Int",
+   "in_list_view": 0,
+   "label": "Cuttings"
+  },
+  {
+   "columns": 2,
+   "fieldname": "from_existing_ms",
+   "fieldtype": "Int",
+   "in_list_view": 0,
+   "label": "From Existing MS"
+  },
+  {
+   "columns": 2,
+   "fieldname": "from_new_ms",
+   "fieldtype": "Int",
+   "in_list_view": 0,
+   "label": "From New MS"
+  },
+  {
+   "columns": 1,
+   "description": "Plants covered by tissue culture and roots bought in for this season. A crop with no motherstock is covered entirely from here.",
+   "fieldname": "from_bought",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "From Bought Material",
+   "read_only": 1
+  },
+  {
+   "description": "Cuttings every live pool can actually take this week, after the build-up to full capacity.",
+   "fieldname": "capacity_available",
+   "fieldtype": "Int",
+   "in_list_view": 0,
+   "label": "Capacity Available",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ramp_pct",
+   "fieldtype": "Percent",
+   "in_list_view": 0,
+   "label": "Of Full Capacity",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "shortfall",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Short By"
+  },
+  {
+   "description": "The day this week's plants are wanted in the field. The plants are stuck weeks earlier; this is when they leave the propagation unit for the block.",
+   "fieldname": "deliver_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Deliver To Farm",
+   "read_only": 1
+  },
+  {
+   "fieldname": "plant_week",
+   "fieldtype": "Data",
+   "in_list_view": 0,
+   "label": "Planting Weeks"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "in_list_view": 0,
+   "label": "Notes"
+  },
+  {
+   "fieldname": "sec_actual",
+   "fieldtype": "Section Break",
+   "label": "What The Farm Got"
+  },
+  {
+   "fieldname": "baseline_plants",
+   "fieldtype": "Int",
+   "label": "Promised",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "What the plan said when it was approved. A week is judged against this, not against what the plan has since become."
+  },
+  {
+   "fieldname": "actual_plants",
+   "fieldtype": "Int",
+   "label": "Actually Delivered",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "variance_plants",
+   "fieldtype": "Int",
+   "label": "Variance",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "actual_on",
+   "fieldtype": "Date",
+   "label": "Delivered On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "label": "State",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "options": "\nTo Come\nDelivered\nPart\nMissed\nNot Reported"
+  },
+  {
+   "fieldname": "recorded_from",
+   "fieldtype": "Data",
+   "label": "Recorded From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "uplift_plants",
+   "fieldtype": "Int",
+   "label": "Re-plan Uplift",
+   "read_only": 1,
+   "description": "Plants added to this week by an accepted re-plan, to cover a shortfall carried from a week that has closed."
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-07 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Summer Flower Propagation Week",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

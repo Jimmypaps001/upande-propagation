@@ -257,7 +257,7 @@ def _tell_the_plan(doctype, name):
 	to save because another app was unhappy.
 	"""
 	try:
-		from upande_summer_flowers.summer_flowers import propagation_feed
+		from upande_propagation import propagation_feed as propagation_feed
 	except ImportError:
 		return None
 	return propagation_feed.feed(doctype, name)

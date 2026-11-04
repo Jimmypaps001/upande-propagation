@@ -590,7 +590,7 @@ def lift_trough(setting, lift_no, plants_taken, lift_date=None, destination=None
 	doc.save()
 	fed = None
 	if cint(feed_plan):
-		from upande_summer_flowers.summer_flowers import trough_actuals
+		from upande_propagation import trough_actuals as trough_actuals
 
 		fed = trough_actuals.feed_actuals(doc.name)
 	return {"setting": doc.name, "status": doc.status,

@@ -71,6 +71,20 @@ required_apps = ["upande_production"]
 # Old upande_agriculture paths the phones and desk scripts still call. The roses
 # app's propagation endpoints keep their request/response shape in mobile/legacy.py.
 override_whitelisted_methods = {
+	# upande_summer_flowers was split up: its propagation endpoints keep their old paths.
+	"upande_summer_flowers.summer_flowers.propagation_solver.options": "upande_propagation.propagation_solver.options",
+	"upande_summer_flowers.summer_flowers.propagation_solver.peak_options": "upande_propagation.propagation_solver.peak_options",
+	"upande_summer_flowers.summer_flowers.propagation_actuals.accept": "upande_propagation.propagation_actuals.accept",
+	"upande_summer_flowers.summer_flowers.trough_actuals.against_plan": "upande_propagation.trough_actuals.against_plan",
+	"upande_summer_flowers.summer_flowers.trough_actuals.feed_actuals": "upande_propagation.trough_actuals.feed_actuals",
+	"upande_summer_flowers.summer_flowers.plant_receipt.refresh_planting": "upande_propagation.plant_receipt.refresh_planting",
+	"upande_summer_flowers.summer_flowers.plant_receipt.revise_to_delivered": "upande_propagation.plant_receipt.revise_to_delivered",
+	"upande_summer_flowers.summer_flowers.plant_issue.issue_plants": "upande_propagation.plant_issue.issue_plants",
+	"upande_summer_flowers.summer_flowers.plant_issue.dispatch_to_block": "upande_propagation.plant_issue.dispatch_to_block",
+	"upande_summer_flowers.summer_flowers.setup.plant_quality.install": "upande_propagation.setup.plant_quality.install",
+	"upande_summer_flowers.summer_flowers.doctype.summer_flower_propagation_plan.summer_flower_propagation_plan.build_from_plan": "upande_propagation.upande_propagation.doctype.summer_flower_propagation_plan.summer_flower_propagation_plan.build_from_plan",
+	"upande_summer_flowers.summer_flowers.doctype.summer_flower_motherstock_plan.summer_flower_motherstock_plan.for_plan": "upande_propagation.upande_propagation.doctype.summer_flower_motherstock_plan.summer_flower_motherstock_plan.for_plan",
+	"upande_summer_flowers.summer_flowers.doctype.summer_flower_motherstock_batch.summer_flower_motherstock_batch.cycle_options": "upande_propagation.upande_propagation.doctype.summer_flower_motherstock_batch.summer_flower_motherstock_batch.cycle_options",
 	"upande_agriculture.api.promote_trial_to_cycle": "upande_propagation.api.promote_trial_to_cycle",
 	"upande_agriculture.mobile.api.productionCreateSeedlingRequest": "upande_propagation.mobile.legacy.productionCreateSeedlingRequest",
 	"upande_agriculture.mobile.api.productionListSeedlingRequests": "upande_propagation.mobile.legacy.productionListSeedlingRequests",
@@ -112,7 +126,14 @@ website_route_rules = [
 jinja = {"methods": ["upande_propagation.qr.qr_data_uri"]}
 
 after_install = "upande_propagation.install.after_install"
-after_migrate = "upande_propagation.install.after_migrate"
+after_migrate = [
+	"upande_propagation.install.after_migrate",
+	# The plant inspection template and its parameters are records, not schema: this creates what is
+	# missing and leaves the thresholds a farm has since corrected.
+	"upande_propagation.setup.plant_quality.install",
+	# The propagation units' capacity fields are schema; the figures on them are a site's own.
+	"upande_propagation.setup.propagation_units.install",
+]
 
 # Uninstallation
 # ------------
@@ -298,4 +319,26 @@ add_to_apps_screen = [
 fixtures = [
 	{"doctype": "Custom HTML Block", "filters": [["name", "in", ["Propagation Navigation"]]]},
 	{"doctype": "Web Page", "filters": [["route", "=", "propagation-dashboard"]]},
+	# Our own propagation units are warehouses of this type.
+	{"doctype": "Warehouse Type", "filters": [["name", "in", ["Propagation Unit"]]]},
 ]
+
+# Plant material is bought, so it arrives on a Purchase Order / Receipt / Invoice. These handlers add the
+# planting context, the plan comparison and the inspection gate; each returns immediately unless the
+# document carries a plant line. A Warehouse of type Propagation Unit is one of our own units.
+doc_events = {
+	"Warehouse": {"validate": "upande_propagation.setup.propagation_units.mark_unit"},
+	"Purchase Order": {"validate": "upande_propagation.plant_receipt.set_line_context"},
+	"Purchase Receipt": {
+		"validate": "upande_propagation.plant_receipt.set_line_context",
+		"on_submit": "upande_propagation.plant_receipt.refresh_plantings",
+		"on_cancel": "upande_propagation.plant_receipt.refresh_plantings",
+	},
+	"Purchase Invoice": {
+		"validate": "upande_propagation.plant_receipt.set_line_context",
+		# before_submit: a missing inspection has to stop the submission, not be found after the ledger moved.
+		"before_submit": "upande_propagation.plant_receipt.require_inspection",
+		"on_submit": "upande_propagation.plant_receipt.refresh_plantings",
+		"on_cancel": "upande_propagation.plant_receipt.refresh_plantings",
+	},
+}
