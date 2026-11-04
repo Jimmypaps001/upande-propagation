@@ -8,8 +8,8 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# Seedling Dispatch links to Crop Cycle, which upande_agriculture owns.
-required_apps = ["upande_agriculture"]
+# Seedling Dispatch links to Crop Cycle, which upande_production owns (ported from upande_agriculture).
+required_apps = ["upande_production"]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
