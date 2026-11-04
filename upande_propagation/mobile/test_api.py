@@ -22,6 +22,9 @@ from upande_propagation.mobile import api
 class TestMobileApi(IntegrationTestCase):
 	@classmethod
 	def setUpClass(cls):
+		from upande_propagation.tests_support import skip_erpnext_test_records
+
+		skip_erpnext_test_records()
 		super().setUpClass()
 		cls.company = frappe.get_all("Company", pluck="name", limit=1)[0]
 		cls.item = frappe.get_all(
