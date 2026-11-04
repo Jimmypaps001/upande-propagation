@@ -281,3 +281,21 @@ after_migrate = "upande_propagation.install.after_migrate"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
+
+# The desk's apps screen: one Propagation tile with the animated mark
+# (public/js/propagation_logo_motion.js swaps the <img> for the inlined SVG).
+add_to_apps_screen = [
+	{
+		"name": "upande_propagation",
+		"logo": "/assets/upande_propagation/images/propagation_logo.svg",
+		"title": "Propagation",
+		"route": "/desk/propagation",
+	}
+]
+
+app_include_js = ["/assets/upande_propagation/js/propagation_logo_motion.js"]
+
+# The launcher block on the Propagation workspace.
+fixtures = [
+	{"doctype": "Custom HTML Block", "filters": [["name", "in", ["Propagation Navigation"]]]},
+]

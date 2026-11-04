@@ -12,3 +12,4 @@ upande_propagation.patches.v1_0.create_propagation_dashboard_page
 # The Warehouse custom fields have to exist before anything queries them.
 upande_propagation.patches.v1_0.add_propagation_unit_fields
 upande_propagation.patches.v1_0.seed_arrival_defaults
+upande_propagation.patches.v1_0.reconcile_propagation_desktop_icon
