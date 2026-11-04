@@ -703,3 +703,52 @@ def get_invoices(batch):
 		],
 		order_by="posting_date asc",
 	)
+
+
+# ---------------------------------------------------------------- flower trials
+@frappe.whitelist()
+def promote_trial_to_cycle(
+	trial_name: str,
+	greenhouse: str,
+	planting_date: str,
+	uproot_cycle_name: str | None = None,
+) -> dict:
+	"""Create a Crop Cycle from an approved Flower Trial.
+
+	Crop Cycle belongs to upande_production; it is reached by name only, so this
+	app never imports production code. Ported from upande_agriculture.api.
+
+	Flower Trial has no varieties child table: the variety is the scalar field
+	`variety_yield`.
+	"""
+	trial = frappe.get_doc("Flower Trial", trial_name)
+	if (trial.get("recommendation") or "").strip() != "Approve for Production":
+		frappe.throw(_("Trial is not approved for production."))
+
+	variety = trial.get("variety_yield")
+
+	# The protocol linked to this variety (best effort; may be None).
+	proto_name = (
+		frappe.db.get_value("Crop Protocol", {"variety_item": variety}, "name")
+		if variety else None
+	)
+
+	# A new planting ends the cycle it replaces.
+	if uproot_cycle_name:
+		frappe.db.set_value("Crop Cycle", uproot_cycle_name, {
+			"status": "Ended",
+			"cycle_end_date": getdate(planting_date),
+		})
+
+	cycle = frappe.get_doc({
+		"doctype": "Crop Cycle",
+		"greenhouse": greenhouse,
+		"variety": variety,
+		"crop_protocol": proto_name,
+		"planting_date": getdate(planting_date),
+		"status": "Active",
+		"breeder": trial.get("breeder"),
+		"notes": f"From Flower Trial {trial_name}",
+	}).insert(ignore_permissions=True)
+
+	return {"crop_cycle": cycle.name, "greenhouse": greenhouse}

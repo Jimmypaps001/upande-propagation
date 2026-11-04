@@ -23,12 +23,27 @@ rather than left to disagree.
 import frappe
 from frappe.model.document import Document
 
-try:
-	from upande_agriculture.upande_agriculture.doctype.greenhouse.greenhouse import (
-		Greenhouse,
-	)
-except Exception:          # upande_agriculture absent: the block still saves
-	Greenhouse = None
+
+def _greenhouse_class():
+	"""The greenhouse's own bed logic, now owned by upande_production.
+
+	Its module is "Crop Production"; the import is tried against the places the
+	port may put it and falls back to None so a block still saves without it.
+	"""
+	import importlib
+
+	for path in (
+		"upande_production.crop_production.doctype.greenhouse.greenhouse",
+		"upande_production.production.doctype.greenhouse.greenhouse",
+	):
+		try:
+			return importlib.import_module(path).Greenhouse
+		except Exception:
+			continue
+	return None
+
+
+Greenhouse = _greenhouse_class()
 
 
 class Block(Document):

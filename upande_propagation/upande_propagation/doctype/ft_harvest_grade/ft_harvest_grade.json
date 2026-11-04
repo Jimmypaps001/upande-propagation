@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "creation": "2026-11-04 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "istable": 1,
+ "editable_grid": 1,
+ "module": "Upande Propagation",
+ "name": "FT Harvest Grade",
+ "owner": "Administrator",
+ "field_order": [
+  "harvest_date",
+  "grade",
+  "stems",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "harvest_date",
+   "fieldtype": "Date",
+   "label": "Harvest Date",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "grade",
+   "fieldtype": "Data",
+   "label": "Grade",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "stems",
+   "fieldtype": "Int",
+   "label": "Stems",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "links": [],
+ "modified": "2026-11-04 00:00:00",
+ "modified_by": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
