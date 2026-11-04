@@ -1,0 +1,239 @@
+{
+  "_DateRangePicker-G8Lfvuv7.js": {
+    "file": "chunks/DateRangePicker-G8Lfvuv7.js",
+    "name": "DateRangePicker",
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js"
+    ]
+  },
+  "_KpiCard-Ddo6etbP.js": {
+    "file": "chunks/KpiCard-Ddo6etbP.js",
+    "name": "KpiCard",
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js"
+    ]
+  },
+  "_StatusPill-xL65uvjf.js": {
+    "file": "chunks/StatusPill-xL65uvjf.js",
+    "name": "StatusPill",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "_TogglePill-Dc5ouPQ8.js": {
+    "file": "chunks/TogglePill-Dc5ouPQ8.js",
+    "name": "TogglePill",
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js"
+    ]
+  },
+  "_charts-BGyWwh4W.js": {
+    "file": "chunks/charts-BGyWwh4W.js",
+    "name": "charts",
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js"
+    ]
+  },
+  "_format-DKvs9K_g.js": {
+    "file": "chunks/format-DKvs9K_g.js",
+    "name": "format",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "index.html": {
+    "file": "propagation-C1FFKjyS.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "dynamicImports": [
+      "src/pages/Dashboard.tsx",
+      "src/pages/Batches.tsx",
+      "src/pages/BatchDetail.tsx",
+      "src/pages/Logs.tsx",
+      "src/pages/Requests.tsx",
+      "src/pages/Dispatch.tsx",
+      "src/pages/Troughs.tsx",
+      "src/pages/Consignments.tsx",
+      "src/pages/Trials.tsx",
+      "src/pages/MotherBlocks.tsx",
+      "src/pages/Traceability.tsx"
+    ],
+    "assets": [
+      "assets/poppins-400-cpxAROuN.woff2",
+      "assets/poppins-500-C8OXljZJ.woff2",
+      "assets/poppins-600-zEkxB9Mr.woff2",
+      "assets/poppins-700-Qrb0O0WB.woff2"
+    ]
+  },
+  "src/assets/fonts/poppins-400.woff2": {
+    "file": "assets/poppins-400-cpxAROuN.woff2",
+    "src": "src/assets/fonts/poppins-400.woff2"
+  },
+  "src/assets/fonts/poppins-500.woff2": {
+    "file": "assets/poppins-500-C8OXljZJ.woff2",
+    "src": "src/assets/fonts/poppins-500.woff2"
+  },
+  "src/assets/fonts/poppins-600.woff2": {
+    "file": "assets/poppins-600-zEkxB9Mr.woff2",
+    "src": "src/assets/fonts/poppins-600.woff2"
+  },
+  "src/assets/fonts/poppins-700.woff2": {
+    "file": "assets/poppins-700-Qrb0O0WB.woff2",
+    "src": "src/assets/fonts/poppins-700.woff2"
+  },
+  "src/pages/BatchDetail.tsx": {
+    "file": "chunks/BatchDetail-BtOSAnL6.js",
+    "name": "BatchDetail",
+    "src": "src/pages/BatchDetail.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_StatusPill-xL65uvjf.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js"
+    ]
+  },
+  "src/pages/Batches.tsx": {
+    "file": "chunks/Batches-tm9HqBQc.js",
+    "name": "Batches",
+    "src": "src/pages/Batches.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_StatusPill-xL65uvjf.js",
+      "_TogglePill-Dc5ouPQ8.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js"
+    ]
+  },
+  "src/pages/Consignments.tsx": {
+    "file": "chunks/Consignments-Da4YrN4K.js",
+    "name": "Consignments",
+    "src": "src/pages/Consignments.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js",
+      "_StatusPill-xL65uvjf.js",
+      "_DateRangePicker-G8Lfvuv7.js"
+    ]
+  },
+  "src/pages/Dashboard.tsx": {
+    "file": "chunks/Dashboard-BxvMmpLX.js",
+    "name": "Dashboard",
+    "src": "src/pages/Dashboard.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js",
+      "_StatusPill-xL65uvjf.js",
+      "_DateRangePicker-G8Lfvuv7.js"
+    ]
+  },
+  "src/pages/Dispatch.tsx": {
+    "file": "chunks/Dispatch-B6vf9914.js",
+    "name": "Dispatch",
+    "src": "src/pages/Dispatch.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js",
+      "_StatusPill-xL65uvjf.js",
+      "_DateRangePicker-G8Lfvuv7.js"
+    ]
+  },
+  "src/pages/Logs.tsx": {
+    "file": "chunks/Logs-D8v-KKmz.js",
+    "name": "Logs",
+    "src": "src/pages/Logs.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js",
+      "_DateRangePicker-G8Lfvuv7.js"
+    ]
+  },
+  "src/pages/MotherBlocks.tsx": {
+    "file": "chunks/MotherBlocks-_WbgsBoC.js",
+    "name": "MotherBlocks",
+    "src": "src/pages/MotherBlocks.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js",
+      "_StatusPill-xL65uvjf.js"
+    ]
+  },
+  "src/pages/Requests.tsx": {
+    "file": "chunks/Requests-CpMdqMTv.js",
+    "name": "Requests",
+    "src": "src/pages/Requests.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js",
+      "_StatusPill-xL65uvjf.js",
+      "_TogglePill-Dc5ouPQ8.js"
+    ]
+  },
+  "src/pages/Traceability.tsx": {
+    "file": "chunks/Traceability-WZvFcSBD.js",
+    "name": "Traceability",
+    "src": "src/pages/Traceability.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_StatusPill-xL65uvjf.js",
+      "_TogglePill-Dc5ouPQ8.js"
+    ]
+  },
+  "src/pages/Trials.tsx": {
+    "file": "chunks/Trials-DWzGHW3L.js",
+    "name": "Trials",
+    "src": "src/pages/Trials.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_charts-BGyWwh4W.js",
+      "_StatusPill-xL65uvjf.js"
+    ]
+  },
+  "src/pages/Troughs.tsx": {
+    "file": "chunks/Troughs-CZqZkP5j.js",
+    "name": "Troughs",
+    "src": "src/pages/Troughs.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_format-DKvs9K_g.js",
+      "_KpiCard-Ddo6etbP.js",
+      "_StatusPill-xL65uvjf.js"
+    ]
+  },
+  "style.css": {
+    "file": "propagation-CzJxpZ5K.css",
+    "src": "style.css"
+  }
+}
