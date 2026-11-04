@@ -38,5 +38,21 @@ class TestPropagationLogo(unittest.TestCase):
 			pcts = [float(x) for x in re.findall(r"^\s*([\d.]+)%", body, re.M)]
 			self.assertEqual(pcts, sorted(pcts))
 
+	def test_every_crop_has_a_play_once_mark_and_a_looping_loader(self):
+		for key in ("standard-roses", "spray-roses", "summer-flowers"):
+			mark = _read(f"propagation_logo_{key}.svg")
+			loader = _read(f"propagation_logo_{key}_loader.svg")
+			self.assertIn("@keyframes", mark)
+			self.assertNotIn("<script", mark)
+			for a in re.findall(r"animation: [^;]*ms[^;]*;", mark):
+				self.assertRegex(a, r" 1 both;$", (key, a))
+			self.assertIn("prefers-reduced-motion: reduce", mark)
+			self.assertIn("infinite", loader)
+			# the crop's scene is its own drawing, not the generic one
+			self.assertNotEqual(mark, _read("propagation_logo.svg"))
+			for body in re.findall(r"@keyframes [\w-]+ \{(.*?)\n    \}", mark, re.S):
+				pcts = [float(x) for x in re.findall(r"^\s*([\d.]+)%", body, re.M)]
+				self.assertEqual(pcts, sorted(pcts), key)
+
 	def test_loader_still_loops(self):
 		self.assertIn("infinite", _read("propagation_logo_loader.svg"))

@@ -167,7 +167,7 @@
   <circle cx="344.5" cy="344.5" r="340" fill="#ffffff" stroke="#1c1b19" stroke-opacity=".3" stroke-width="7"/>
   <g clip-path="url(#propagation-disc)">
   <g class="scene">
-  <g transform="translate(0 0)">
+  <g transform="translate(344 560) scale(1.2) translate(-344 -560)">
   <g class="tray">
     <path d="M168 474 H520 L498 604 H190 Z" fill="#e6e2da"/>
     <path d="M180 486 H276 L268 596 H188 Z" fill="#d6d1c8"/>

@@ -8,7 +8,7 @@ fades and the round starts again. Flat solid shapes, no outlines; ink tones plus
 from .common import ACCENT, INK, MID, PALE
 
 LABEL = "Propagation"
-SCENE_TRANSFORM = "translate(0 0)"
+SCENE_TRANSFORM = "translate(344 560) scale(1.2) translate(-344 -560)"
 LOOP_MS = 4400
 
 PANEL = "#e6e2da"
