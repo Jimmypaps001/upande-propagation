@@ -34,7 +34,6 @@ def _greenhouse_class():
 
 	for path in (
 		"upande_production.crop_production.doctype.greenhouse.greenhouse",
-		"upande_production.production.doctype.greenhouse.greenhouse",
 	):
 		try:
 			return importlib.import_module(path).Greenhouse

@@ -3,12 +3,17 @@
 
 import frappe
 from frappe.tests import IntegrationTestCase
-from frappe.utils import add_days, getdate, today
+
+from upande_propagation.tests_support import skip_erpnext_test_records
+from frappe.utils import add_days, cint, getdate, today
 
 from upande_propagation.upande_propagation.doctype.propagation_batch.propagation_batch import (
+	ACTIVITY_STAGE_MAP,
 	advance_stage,
 	complete_batch,
+	stage_index,
 )
+
 
 
 class TestPropagationBatch(IntegrationTestCase):
@@ -16,6 +21,7 @@ class TestPropagationBatch(IntegrationTestCase):
 
 	@classmethod
 	def setUpClass(cls):
+		skip_erpnext_test_records()
 		super().setUpClass()
 		cls.company = frappe.get_all("Company", pluck="name", limit=1)[0]
 		# A sellable, non-asset item: the sale tests raise a Sales Invoice for it.
@@ -82,6 +88,18 @@ class TestPropagationBatch(IntegrationTestCase):
 		return batch
 
 	def log(self, batch, activity, qty, mortality=0, day_offset=0):
+		# The protocol only lets work be caught up, never run ahead: bring the
+		# batch to the stage this activity belongs to before logging it.
+		target = ACTIVITY_STAGE_MAP.get(activity)
+		current = frappe.db.get_value("Propagation Batch", batch.name, "current_stage")
+		if target and frappe.db.get_value("Propagation Batch", batch.name, "docstatus") == 1 \
+				and stage_index(target) > stage_index(current):
+			doc = frappe.get_doc("Propagation Batch", batch.name)
+			opened = next((r for r in doc.stages if r.stage == doc.current_stage and not r.end_date), None)
+			carry = cint(doc.total_survived)
+			if opened and cint(opened.qty_entered):
+				carry = min(carry, cint(opened.qty_entered))
+			advance_stage(batch.name, stage=target, qty=carry or None)
 		return frappe.get_doc(
 			{
 				"doctype": "Daily Propagation Log",
@@ -111,7 +129,10 @@ class TestPropagationBatch(IntegrationTestCase):
 		return doc
 
 	def take_to_hardening(self, batch):
-		self.log(batch, "Cutting", 1000)
+		if not frappe.db.exists(
+			"Daily Propagation Log", {"propagation_batch": batch.name, "activity_type": "Cutting"}
+		):
+			self.log(batch, "Cutting", 1000)
 		self.log(batch, "Sticking", 980, mortality=20)
 		self.log(batch, "Hardening Count", 950, mortality=30)
 		batch.reload()

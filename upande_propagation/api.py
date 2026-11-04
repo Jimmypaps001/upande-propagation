@@ -706,6 +706,14 @@ def get_invoices(batch):
 
 
 # ---------------------------------------------------------------- flower trials
+def _trial_variety(trial):
+	for table in ("bed_range", "bed_details"):
+		for row in trial.get(table) or []:
+			if row.get("variety"):
+				return row.get("variety")
+	return None
+
+
 @frappe.whitelist()
 def promote_trial_to_cycle(
 	trial_name: str,
@@ -718,14 +726,17 @@ def promote_trial_to_cycle(
 	Crop Cycle belongs to upande_production; it is reached by name only, so this
 	app never imports production code. Ported from upande_agriculture.api.
 
-	Flower Trial has no varieties child table: the variety is the scalar field
-	`variety_yield`.
+	The variety is the one planted in the trial's beds (Bed Range first, then
+	the individual bed overview). upande_agriculture read it from `variety_yield`,
+	but that field is an Int (stems/m2/yr), so the cycle came out with variety 0.
 	"""
 	trial = frappe.get_doc("Flower Trial", trial_name)
 	if (trial.get("recommendation") or "").strip() != "Approve for Production":
 		frappe.throw(_("Trial is not approved for production."))
 
-	variety = trial.get("variety_yield")
+	variety = _trial_variety(trial)
+	if not variety:
+		frappe.throw(_("Flower Trial {0} has no variety planted in its beds.").format(trial_name))
 
 	# The protocol linked to this variety (best effort; may be None).
 	proto_name = (

@@ -6,19 +6,35 @@ from unittest.mock import MagicMock, patch
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from upande_propagation.tests_support import skip_erpnext_test_records
+
 from upande_propagation import api
 from upande_propagation.patches.v1_0 import move_agriculture_ownership as own
 
 
+
 class TestFlowerTrial(IntegrationTestCase):
+	@classmethod
+	def setUpClass(cls):
+		skip_erpnext_test_records()
+		super().setUpClass()
+
 	def test_promote_refuses_a_trial_not_approved(self):
 		trial = MagicMock(**{"get.return_value": "Continue Trial"})
 		with patch.object(frappe, "get_doc", return_value=trial):
 			with self.assertRaises(frappe.ValidationError):
 				api.promote_trial_to_cycle("T-1", "GH-1", "2030-01-01")
 
+	def test_promote_refuses_a_trial_with_no_variety(self):
+		values = {"recommendation": "Approve for Production"}
+		trial = MagicMock(**{"get.side_effect": lambda k, d=None: values.get(k, d)})
+		with patch.object(frappe, "get_doc", return_value=trial):
+			with self.assertRaises(frappe.ValidationError):
+				api.promote_trial_to_cycle("T-1", "GH-1", "2030-01-01")
+
 	def test_promote_builds_the_cycle_from_the_trial(self):
-		values = {"recommendation": "Approve for Production", "variety_yield": "Item-X", "breeder": "Sup"}
+		values = {"recommendation": "Approve for Production", "breeder": "Sup",
+			"bed_range": [{"variety": "Item-X"}]}
 		trial = MagicMock(**{"get.side_effect": lambda k, d=None: values.get(k, d)})
 		made = {}
 
@@ -70,3 +86,43 @@ class TestFlowerTrial(IntegrationTestCase):
 			patch.object(frappe.db, "exists", return_value=True):
 			own.execute()
 		sv.assert_not_called()
+
+
+class TestPromoteTrialAgainstCropCycle(IntegrationTestCase):
+	"""The real thing: promoting a trial leaves a Crop Cycle row in production's doctype."""
+
+	@classmethod
+	def setUpClass(cls):
+		skip_erpnext_test_records()
+		super().setUpClass()
+
+	def test_promote_creates_a_crop_cycle(self):
+		from upande_production.tests import default_uom, make_warehouse
+
+		greenhouse = make_warehouse("PROP TRIAL GH 1")
+		item = "PROP-TRIAL-VARIETY"
+		if not frappe.db.exists("Item", item):
+			frappe.get_doc({
+				"doctype": "Item", "item_code": item, "item_name": item,
+				"item_group": "All Item Groups", "stock_uom": default_uom(),
+			}).insert(ignore_permissions=True, ignore_mandatory=True)
+		protocol = frappe.get_doc({
+			"doctype": "Crop Protocol", "protocol_name": "PROP-TRIAL-PROTO", "variety_item": item,
+			"weeks_to_first_bending": 5, "weeks_to_second_bending": 5, "weeks_between_cuts": 7,
+			"stems_per_plant_first_harvest": 0.7, "stems_per_cut": 1.5,
+			"max_stems_per_plant_per_cut": 1.61, "productive_life_weeks": 260,
+		}).insert(ignore_permissions=True, ignore_mandatory=True)
+		trial = frappe.get_doc({
+			"doctype": "Flower Trial", "trial_name": "PROP-TRIAL-1", "greenhouse": greenhouse,
+			"recommendation": "Approve for Production",
+			"bed_range": [{"variety": item, "from_bed": 1, "to_bed": 10, "bed_length": 30, "bed_width": 1}],
+		}).insert(ignore_permissions=True, ignore_mandatory=True)
+
+		out = api.promote_trial_to_cycle(trial.name, greenhouse, "2030-01-01")
+
+		cycle = frappe.get_doc("Crop Cycle", out["crop_cycle"])
+		self.assertEqual(cycle.greenhouse, greenhouse)
+		self.assertEqual(cycle.variety, item)
+		self.assertEqual(cycle.crop_protocol, protocol.name)
+		self.assertEqual(cycle.status, "Active")
+		self.assertIn("PROP-TRIAL-1", cycle.notes)
