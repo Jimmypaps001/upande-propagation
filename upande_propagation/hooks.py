@@ -283,17 +283,15 @@ after_migrate = "upande_propagation.install.after_migrate"
 # ignore_translatable_strings_from = []
 
 # The desk's apps screen: one Propagation tile with the animated mark
-# (public/js/propagation_logo_motion.js swaps the <img> for the inlined SVG).
+# (a CSS play-once SVG; Frappe opens the tile through the Workspace Sidebar, same tab).
 add_to_apps_screen = [
 	{
 		"name": "upande_propagation",
 		"logo": "/assets/upande_propagation/images/propagation_logo.svg",
 		"title": "Propagation",
-		"route": "/desk/propagation",
+		"route": "/desk/propagation?sidebar=Propagation",
 	}
 ]
-
-app_include_js = ["/assets/upande_propagation/js/propagation_logo_motion.js"]
 
 # The launcher block on the Propagation workspace.
 fixtures = [

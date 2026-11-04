@@ -26,7 +26,7 @@ def execute():
 		"app": APP,
 		"link_type": "Workspace Sidebar",
 		"link_to": LABEL,
-		"link": "/desk/propagation",
+		"link": None,
 		"logo_url": LOGO,
 		"hidden": 0,
 		"parent_icon": None,
