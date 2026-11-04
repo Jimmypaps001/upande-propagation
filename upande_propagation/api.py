@@ -59,6 +59,65 @@ BATCH_FIELDS = (
 )
 
 
+# ---------------------------------------------------------------------- crops
+def crop_items(crop):
+	"""The Items (varieties) that belong to a Production Crop, or None for "all crops".
+
+	Propagation records carry their variety as an Item (Propagation Batch, Seedling Request
+	Item, Plant Consignment, Seedling Dispatch, Mother Block, Daily Propagation Log), and
+	Production Variety is what says which crop an Item is a variety of. `crop` is the crop's
+	crop_key (or its name). An unknown crop matches nothing, rather than everything.
+	"""
+	if not crop:
+		return None
+	if not frappe.db.table_exists("Production Variety"):
+		return [""]
+	name = frappe.db.get_value("Production Crop", {"crop_key": crop}) or (
+		crop if frappe.db.exists("Production Crop", crop) else None
+	)
+	if not name:
+		return [""]
+	rows = frappe.get_all("Production Variety", filters={"crop": name}, fields=["item", "product"])
+	return sorted({r[k] for r in rows for k in ("item", "product") if r.get(k)}) or [""]
+
+
+def crop_request_names(items):
+	"""Seedling Requests with at least one row for these varieties."""
+	return frappe.get_all(
+		"Seedling Request Item",
+		filters={"variety": ("in", items), "parenttype": "Seedling Request"},
+		pluck="parent",
+		distinct=True,
+	) or [""]
+
+
+def crop_batch_names(items):
+	return frappe.get_all("Propagation Batch", filters={"variety": ("in", items)}, pluck="name") or [""]
+
+
+@frappe.whitelist()
+def get_crops():
+	"""The crops propagation can be filtered to, each with its accent and varieties.
+
+	Production Crop is the one list of crops; a crop with no variety mapped yet still
+	appears (it simply has nothing under it). Records whose variety is on no crop show
+	under "All crops" only.
+	"""
+	check_access()
+	if not frappe.db.table_exists("Production Crop"):
+		return {"crops": []}
+	crops = frappe.get_all(
+		"Production Crop",
+		filters={"enabled": 1},
+		fields=["name", "crop_key", "accent_color"],
+		order_by="name asc",
+	)
+	for c in crops:
+		c["varieties"] = crop_items(c.crop_key) if c.crop_key else []
+		c["varieties"] = [v for v in (c["varieties"] or []) if v]
+	return {"crops": crops}
+
+
 def check_access():
 	if frappe.session.user == "Guest":
 		raise frappe.PermissionError
@@ -71,13 +130,16 @@ def month_bounds():
 
 
 @frappe.whitelist()
-def get_overview(company=None):
+def get_overview(company=None, crop=None):
 	"""Everything the overview page draws, in one pass."""
 	check_access()
 
+	items = crop_items(crop)
 	batch_filters = {"docstatus": 1}
 	if company:
 		batch_filters["company"] = company
+	if items is not None:
+		batch_filters["variety"] = ("in", items)
 
 	batches = frappe.get_all("Propagation Batch", filters=batch_filters, fields=list(BATCH_FIELDS))
 	active = [b for b in batches if b.current_stage != COMPLETED]
@@ -85,20 +147,22 @@ def get_overview(company=None):
 	return {
 		"company": company,
 		"companies": frappe.get_all("Company", pluck="name", order_by="name asc"),
-		"kpis": build_kpis(active, company),
+		"kpis": build_kpis(active, company, items),
 		"funnel": build_funnel(active),
 		"pipeline": build_pipeline(active),
 		"batches": sorted(active, key=lambda b: (b.iso_year or 0, b.iso_week or 0), reverse=True),
-		"requests": build_requests(company),
-		"dispatches": build_dispatches(company, limit=12),
+		"requests": build_requests(company, items),
+		"dispatches": build_dispatches(company, limit=12, items=items),
 	}
 
 
-def build_kpis(active, company=None):
+def build_kpis(active, company=None, items=None):
 	first, last = month_bounds()
 	dispatch_filters = {"docstatus": 1, "dispatch_date": ("between", [first, last])}
 	if company:
 		dispatch_filters["company"] = company
+	if items is not None:
+		dispatch_filters["variety"] = ("in", items)
 
 	dispatched = frappe.get_all(
 		"Seedling Dispatch",
@@ -115,6 +179,8 @@ def build_kpis(active, company=None):
 	request_filters = {"docstatus": 1, "status": ("in", OPEN_REQUEST_STATES)}
 	if company:
 		request_filters["company"] = company
+	if items is not None:
+		request_filters["name"] = ("in", crop_request_names(items))
 
 	return {
 		"active_batches": len(active),
@@ -158,10 +224,12 @@ def build_pipeline(batches):
 	return rows
 
 
-def build_requests(company=None):
+def build_requests(company=None, items=None):
 	filters = {"docstatus": 1, "status": ("in", OPEN_REQUEST_STATES)}
 	if company:
 		filters["company"] = company
+	if items is not None:
+		filters["name"] = ("in", crop_request_names(items))
 
 	requests = frappe.get_all(
 		"Seedling Request",
@@ -187,10 +255,12 @@ def build_requests(company=None):
 	return requests
 
 
-def build_dispatches(company=None, limit=12):
+def build_dispatches(company=None, limit=12, items=None):
 	filters = {"docstatus": 1}
 	if company:
 		filters["company"] = company
+	if items is not None:
+		filters["variety"] = ("in", items)
 
 	return frappe.get_all(
 		"Seedling Dispatch",
@@ -217,7 +287,7 @@ def build_dispatches(company=None, limit=12):
 
 
 @frappe.whitelist()
-def get_batches(company=None, include_completed=0, limit=500):
+def get_batches(company=None, include_completed=0, limit=500, crop=None):
 	"""Every submitted batch, newest week first — for the batch list and picker."""
 	check_access()
 
@@ -226,6 +296,9 @@ def get_batches(company=None, include_completed=0, limit=500):
 		filters["company"] = company
 	if not cint(include_completed):
 		filters["current_stage"] = ("!=", COMPLETED)
+	items = crop_items(crop)
+	if items is not None:
+		filters["variety"] = ("in", items)
 
 	batches = frappe.get_all(
 		"Propagation Batch",
@@ -238,7 +311,7 @@ def get_batches(company=None, include_completed=0, limit=500):
 
 
 @frappe.whitelist()
-def get_nursery_logs(company=None, from_date=None, to_date=None, limit=1000):
+def get_nursery_logs(company=None, from_date=None, to_date=None, limit=1000, crop=None):
 	"""Daily logs plus per-activity, per-day and per-batch rollups."""
 	check_access()
 
@@ -250,6 +323,10 @@ def get_nursery_logs(company=None, from_date=None, to_date=None, limit=1000):
 			"in",
 			frappe.get_all("Propagation Batch", filters={"company": company}, pluck="name") or [""],
 		)
+
+	items = crop_items(crop)
+	if items is not None:
+		filters["rose_variety"] = ("in", items)
 
 	logs = frappe.get_all(
 		"Daily Propagation Log",
@@ -309,7 +386,7 @@ def get_nursery_logs(company=None, from_date=None, to_date=None, limit=1000):
 
 
 @frappe.whitelist()
-def get_dispatch_book(company=None, from_date=None, to_date=None):
+def get_dispatch_book(company=None, from_date=None, to_date=None, crop=None):
 	"""Dispatches split farm vs sale, with customers, invoices and monthly revenue."""
 	check_access()
 
@@ -318,6 +395,9 @@ def get_dispatch_book(company=None, from_date=None, to_date=None):
 		filters["company"] = company
 	if from_date and to_date:
 		filters["dispatch_date"] = ("between", [from_date, to_date])
+	items = crop_items(crop)
+	if items is not None:
+		filters["variety"] = ("in", items)
 
 	dispatches = frappe.get_all(
 		"Seedling Dispatch",
@@ -404,12 +484,14 @@ def get_dispatch_book(company=None, from_date=None, to_date=None):
 
 
 @frappe.whitelist()
-def get_mother_stock(company=None):
+def get_mother_stock(company=None, crop=None):
 	"""Mother blocks and the budwood taken off them."""
 	check_access()
 
+	items = crop_items(crop)
 	blocks = frappe.get_all(
 		"Mother Block",
+		filters={"variety": ("in", items)} if items is not None else {},
 		fields=[
 			"name",
 			"variety",
@@ -426,6 +508,8 @@ def get_mother_stock(company=None):
 	)
 
 	harvest_filters = {"docstatus": 1}
+	if items is not None:
+		harvest_filters["item"] = ("in", items)
 	harvests = frappe.get_all(
 		"Budwood Harvest",
 		filters=harvest_filters,
@@ -470,7 +554,7 @@ def get_mother_stock(company=None):
 
 
 @frappe.whitelist()
-def get_requests(company=None, include_closed=0):
+def get_requests(company=None, include_closed=0, crop=None):
 	"""Seedling requests with fulfilment, overdue flags and their rows."""
 	check_access()
 
@@ -479,6 +563,9 @@ def get_requests(company=None, include_closed=0):
 		filters["company"] = company
 	if not cint(include_closed):
 		filters["status"] = ("in", OPEN_REQUEST_STATES)
+	items = crop_items(crop)
+	if items is not None:
+		filters["name"] = ("in", crop_request_names(items))
 
 	requests = frappe.get_all(
 		"Seedling Request",
@@ -543,7 +630,34 @@ def get_requests(company=None, include_closed=0):
 
 
 @frappe.whitelist()
-def get_troughs(company=None):
+def get_flower_trials(crop=None):
+	"""Flower Trials, narrowed to a crop through the propagation batch they were raised from.
+
+	A trial has no variety of its own, so a trial with no batch (or a batch whose variety is on no
+	crop) shows under "All crops" only.
+	"""
+	check_access()
+	if not frappe.has_permission("Flower Trial", "read"):
+		frappe.throw(_("You are not permitted to view flower trials."), frappe.PermissionError)
+	filters = {}
+	items = crop_items(crop)
+	if items is not None:
+		filters["propagation_batch"] = ("in", crop_batch_names(items))
+	return frappe.get_all(
+		"Flower Trial",
+		filters=filters,
+		fields=[
+			"name", "trial_name", "greenhouse", "crop_type", "cycle_status", "area", "seedling_source", "qty_planted",
+			"current_live_plants", "planting_date", "first_harvest_date", "total_stems_harvested", "overall_rating",
+			"recommendation", "propagation_batch",
+		],
+		order_by="modified desc",
+		limit=300,
+	)
+
+
+@frappe.whitelist()
+def get_troughs(company=None, crop=None):
 	"""Every active trough with what is standing in it, and the recent settings.
 
 	A trough is Occupied when a Trough Setting still holds it (Standing or Partly
@@ -566,9 +680,13 @@ def get_troughs(company=None):
 	for unit in {r.propagation_unit for r in rows if r.propagation_unit}:
 		held.update(_troughs.settings_holding(unit))
 
+	items = crop_items(crop)
 	troughs = []
 	for r in rows:
 		setting = held.get(r.name)
+		# With a crop picked, a trough standing another crop's plants is not that crop's to show.
+		if items is not None and setting and setting.variety not in items:
+			continue
 		if r.status == "Out of Service":
 			state = "Out of Service"
 		else:
@@ -601,6 +719,8 @@ def get_troughs(company=None):
 	setting_filters = {"docstatus": ["<", 2]}
 	if company:
 		setting_filters["company"] = company
+	if items is not None:
+		setting_filters["variety"] = ("in", items)
 	settings = (
 		frappe.get_all(
 			"Trough Setting",

@@ -54,6 +54,10 @@ def get_batches(filters):
 		conditions["company"] = filters.company
 	if not filters.get("include_completed"):
 		conditions["current_stage"] = ("!=", "Completed")
+	if filters.get("crop"):
+		from upande_propagation.api import crop_items
+
+		conditions["variety"] = ("in", crop_items(filters.crop))
 
 	names = frappe.get_all(
 		"Propagation Batch",

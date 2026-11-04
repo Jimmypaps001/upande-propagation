@@ -405,12 +405,19 @@ def next_consignment_code(arrival_date=None):
 # -------------------------------------------------------------------- arrivals
 @frappe.whitelist()
 def consignments(status=None, variety=None, supplier=None, from_date=None,
-                 to_date=None, limit=60, unit=None, company=None):
-	"""The arrivals history for this unit's company, newest first."""
+                 to_date=None, limit=60, unit=None, company=None, crop=None):
+	"""The arrivals history for this unit's company, newest first.
+
+	`crop` (a Production Crop's crop_key) keeps only the arrivals of that crop's varieties.
+	"""
 	_guard()
-	return _ops.consignments(status=status, variety=variety, supplier=supplier,
+	rows = _ops.consignments(status=status, variety=variety, supplier=supplier,
 	                         from_date=from_date, to_date=to_date, limit=limit,
 	                         unit=unit, company=company)
+	items = _api.crop_items(crop)
+	if items is not None:
+		rows = [r for r in rows if r.get("variety") in items]
+	return rows
 
 
 @frappe.whitelist()
