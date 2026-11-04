@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-02 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "lift_no",
+  "due_date",
+  "plants_due",
+  "column_break_a",
+  "lift_date",
+  "plants_taken",
+  "variance",
+  "section_b",
+  "destination",
+  "notes"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "lift_no",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Lift",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "description": "From the protocol's lift table, counted off the setting date.",
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Due",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "plants_due",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Plants Due",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "lift_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Lifted On"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "plants_taken",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Plants Taken"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "description": "Taken less due. Blank until the lift is recorded.",
+   "fieldname": "variance",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Variance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_b",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "Where these plants went, when they went to the field.",
+   "fieldname": "destination",
+   "fieldtype": "Link",
+   "label": "To Block",
+   "options": "Block"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-11-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Upande Propagation",
+ "name": "Propagation Trough Lift",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
