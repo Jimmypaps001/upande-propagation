@@ -441,14 +441,17 @@ def dispatch_targets(farm=None, unit=None, company=None):
 	# company's books is not somewhere this unit can send a lorry, and the
 	# Stock Entry would refuse it on submit.
 	company = company or company_of(unit)
-	farm_filters = {"disabled": 0}
+	# Farm has no `disabled` column on every site; filter on it only where it exists.
+	farm_meta = frappe.get_meta("Farm")
+	farm_filters = {"disabled": 0} if farm_meta.has_field("disabled") else {}
 	house_filters = {"is_group": 0, "disabled": 0}
 	if company:
-		farm_filters["company"] = company
+		if farm_meta.has_field("company"):
+			farm_filters["company"] = company
 		house_filters["company"] = company
-	farms = frappe.get_all("Farm", filters=farm_filters,
-	                       fields=["name", "farm_name", "company"],
-	                       order_by="farm_name asc")
+	farm_fields = [f for f in ("name", "farm_name", "company") if f == "name" or farm_meta.has_field(f)]
+	farms = frappe.get_all("Farm", filters=farm_filters, fields=farm_fields,
+	                       order_by="farm_name asc" if farm_meta.has_field("farm_name") else "name asc")
 	houses = frappe.get_all(
 		"Warehouse", filters=house_filters,
 		fields=["name", "warehouse_name", "company"], order_by="name asc",
