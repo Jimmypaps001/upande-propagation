@@ -45,7 +45,8 @@ class TestFlowerTrial(IntegrationTestCase):
 			return trial
 
 		with patch.object(frappe, "get_doc", side_effect=fake_get_doc), \
-			patch.object(frappe.db, "get_value", return_value="PROTO-1"):
+			patch.object(frappe.db, "get_value", return_value="PROTO-1"), \
+			patch.object(frappe, "get_meta", return_value=MagicMock(**{"has_field.return_value": True})):
 			out = api.promote_trial_to_cycle("T-1", "GH-1", "2030-01-01")
 		self.assertEqual(out, {"crop_cycle": "CC-1", "greenhouse": "GH-1"})
 		self.assertEqual(made["doctype"], "Crop Cycle")

@@ -326,7 +326,7 @@ def main():
 	check("by supplier is filled", rep["arrivals"]["by_supplier"])
 
 	# --------------------------------------------------------- the plan calendar
-	from upande_summer_flowers.summer_flowers import planning_api as pa
+	from upande_crop_material_planning.summer_flowers import planning_api as pa
 	vlist = pa.propagation_varieties()
 	check("plans list has varieties to filter by", bool(vlist), len(vlist))
 	if vlist:

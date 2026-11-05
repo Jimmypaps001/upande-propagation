@@ -19,7 +19,7 @@ import frappe
 from frappe import _
 
 PROP = "upande_propagation.mobile.api"
-SF = "upande_summer_flowers.mobile.api"
+SF = "upande_production.mobile.summer_flowers_api"
 
 PASS, FAIL = [], []
 
